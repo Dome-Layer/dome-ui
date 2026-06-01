@@ -20,3 +20,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm run test
+      - name: Security audit (npm audit)
+        # DA-007: gate on production deps only; dev-tool advisories are tracked by
+        # Dependabot, not gated here, so they can't block CI.
+        run: npm audit --omit=dev --audit-level=high
