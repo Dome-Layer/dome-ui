@@ -98,3 +98,59 @@ export function sanitizeRedirect(raw: string | null | undefined): string {
   }
   return "/";
 }
+
+/**
+ * Host-aware URL of the logged-in tools hub (`/app` on the marketing site).
+ * On a staging host the hub lives at `staging.domelayer.com/app`; on production
+ * (and anywhere else, e.g. localhost preview) we point at production — the only
+ * reachable real target. Mirrors the website's `toolHref` philosophy.
+ */
+export function getHubUrl(): string {
+  if (typeof window === "undefined") return "https://domelayer.com/app";
+  return isStagingHost(window.location.hostname)
+    ? "https://staging.domelayer.com/app"
+    : "https://domelayer.com/app";
+}
+
+export interface UserClaims {
+  email?: string;
+  sub?: string;
+  exp?: number;
+  [key: string]: unknown;
+}
+
+/**
+ * Decode the (already-trusted) session JWT payload client-side to surface the
+ * signed-in user's identity for display — no network round-trip (keeps the
+ * DA-005 "verify locally" property). Returns null for a missing/opaque/malformed
+ * token. NOT a verification step: the cookie is the trusted session; this is
+ * display-only.
+ */
+export function getUserClaims(): UserClaims | null {
+  const token = getToken();
+  if (!token || typeof atob === "undefined") return null;
+  const parts = token.split(".");
+  if (parts.length < 2) return null;
+  try {
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    const json = decodeURIComponent(
+      atob(padded)
+        .split("")
+        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+        .join("")
+    );
+    const claims = JSON.parse(json);
+    return claims && typeof claims === "object"
+      ? (claims as UserClaims)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Convenience: the signed-in user's email, or null. */
+export function getUserEmail(): string | null {
+  const email = getUserClaims()?.email;
+  return typeof email === "string" ? email : null;
+}

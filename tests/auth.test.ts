@@ -11,7 +11,22 @@ import {
   authHeaders,
   isAuthenticated,
   sanitizeRedirect,
+  getHubUrl,
+  getUserClaims,
+  getUserEmail,
 } from "../src/auth";
+
+function b64url(obj: unknown): string {
+  return Buffer.from(JSON.stringify(obj))
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+function makeJwt(payload: Record<string, unknown>): string {
+  return `${b64url({ alg: "HS256", typ: "JWT" })}.${b64url(payload)}.sig`;
+}
 
 beforeEach(() => {
   document.cookie = "dome_auth_token=; Max-Age=0";
@@ -308,6 +323,66 @@ describe("sanitizeRedirect", () => {
   it("blocks external domain", () => {
     withHostname("domelayer.com", () => {
       expect(sanitizeRedirect("https://evil.com")).toBe("/");
+    });
+  });
+});
+
+describe("getHubUrl", () => {
+  it("points at staging hub on a staging host", () => {
+    withHostname("analyzer.staging.domelayer.com", () => {
+      expect(getHubUrl()).toBe("https://staging.domelayer.com/app");
+    });
+  });
+
+  it("points at production hub on a production host", () => {
+    withHostname("analyzer.domelayer.com", () => {
+      expect(getHubUrl()).toBe("https://domelayer.com/app");
+    });
+  });
+
+  it("falls back to production hub on localhost/dev", () => {
+    withHostname("localhost", () => {
+      expect(getHubUrl()).toBe("https://domelayer.com/app");
+    });
+  });
+});
+
+describe("getUserClaims / getUserEmail", () => {
+  it("returns null when no token is set", () => {
+    expect(getUserClaims()).toBeNull();
+    expect(getUserEmail()).toBeNull();
+  });
+
+  it("decodes email and sub from a valid JWT payload", () => {
+    withHostname("localhost", () => {
+      setToken(makeJwt({ email: "fp@domelayer.com", sub: "user-123" }));
+      const claims = getUserClaims();
+      expect(claims?.email).toBe("fp@domelayer.com");
+      expect(claims?.sub).toBe("user-123");
+      expect(getUserEmail()).toBe("fp@domelayer.com");
+    });
+  });
+
+  it("returns null email when the claim is absent", () => {
+    withHostname("localhost", () => {
+      setToken(makeJwt({ sub: "user-123" }));
+      expect(getUserClaims()?.sub).toBe("user-123");
+      expect(getUserEmail()).toBeNull();
+    });
+  });
+
+  it("returns null for an opaque (non-JWT) token", () => {
+    withHostname("localhost", () => {
+      setToken("opaque-token-no-dots");
+      expect(getUserClaims()).toBeNull();
+      expect(getUserEmail()).toBeNull();
+    });
+  });
+
+  it("returns null for a malformed JWT payload", () => {
+    withHostname("localhost", () => {
+      setToken("header.%%%not-base64%%%.sig");
+      expect(getUserClaims()).toBeNull();
     });
   });
 });
