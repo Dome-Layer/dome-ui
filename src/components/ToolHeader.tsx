@@ -23,16 +23,21 @@ type LinkRenderer = (props: {
 interface ToolHeaderProps {
   /** Tool name, rendered next to the logo for wayfinding. */
   toolName: string;
+  /** Tool home — the logo and the "Home" nav link point here. Default "/". */
   homeHref?: string;
-  /** Tool-specific links (e.g. Saved). Page navigation for multi-page tools belongs in a sidebar, not here. */
+  /** Show the "Home" nav link (paired with navLinks). Default true. Multi-page tools with a sidebar (DocI) set this false. */
+  showHomeLink?: boolean;
+  /** Label for the home link. Default "Home". */
+  homeLabel?: string;
+  /** Tool-specific links (e.g. Saved), shown next to Home. */
   navLinks?: NavLink[];
-  /** Framework link renderer (e.g. Next.js <Link>). Falls back to <a>. */
+  /** Framework link renderer (e.g. Next.js <Link>) for internal routes. Falls back to <a>. */
   renderLink?: LinkRenderer;
   /** Extra desktop nav content (escape hatch). */
   extra?: ReactNode;
   /** "contained" = centered max-width; "fluid" = full-width, edge-aligned to page content. */
   width?: "contained" | "fluid";
-  /** Show the host-aware "All tools" hub link. Default true. */
+  /** Include the host-aware "All tools" hub link inside the account menu. Default true. */
   showHubLink?: boolean;
   /** Label for the hub link. Default "All tools". */
   hubLabel?: string;
@@ -54,6 +59,8 @@ function DefaultLink(props: {
 export function ToolHeader({
   toolName,
   homeHref = "/",
+  showHomeLink = true,
+  homeLabel = "Home",
   navLinks = [],
   renderLink,
   extra,
@@ -72,6 +79,12 @@ export function ToolHeader({
   const initial = email ? email.charAt(0).toUpperCase() : "?";
   const hubHref = getHubUrl();
 
+  // In-tool navigation, left→right: Home (optional) then tool-specific links (Saved…).
+  const navItems: NavLink[] = [
+    ...(showHomeLink ? [{ label: homeLabel, href: homeHref }] : []),
+    ...navLinks,
+  ];
+
   const handleSignIn = () => {
     if (onSignIn) {
       onSignIn();
@@ -86,21 +99,6 @@ export function ToolHeader({
     window.location.href = `${getAuthSiteUrl()}/login`;
   };
 
-  const renderHub = (className: string, onClick?: () => void) =>
-    showHubLink
-      ? Link({
-          href: hubHref,
-          className,
-          onClick,
-          children: (
-            <>
-              <LayoutGrid size={15} strokeWidth={1.75} aria-hidden="true" />
-              {hubLabel}
-            </>
-          ),
-        })
-      : null;
-
   return (
     <header className="site-header sticky top-0 z-40">
       <div
@@ -109,7 +107,7 @@ export function ToolHeader({
           width === "fluid" ? "w-full" : "max-w-[1152px] mx-auto"
         )}
       >
-        {/* Brand + wayfinding */}
+        {/* Brand + wayfinding (logo → tool home) */}
         <div className="flex items-center min-w-0">
           {Link({
             href: homeHref,
@@ -122,9 +120,8 @@ export function ToolHeader({
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-4">
-          {renderHub("dome-navlink")}
-          {navLinks.map((link) => (
-            <span key={link.href}>
+          {navItems.map((link) => (
+            <span key={`${link.href}:${link.label}`}>
               {Link({
                 href: link.href,
                 className: "dome-navlink",
@@ -133,12 +130,12 @@ export function ToolHeader({
             </span>
           ))}
 
-          {isAuthenticated && email ? (
+          {isAuthenticated ? (
             <div className="dome-account">
               <button
                 type="button"
                 className="dome-avatar"
-                aria-label={`Account: ${email}`}
+                aria-label={email ? `Account: ${email}` : "Account"}
                 aria-haspopup="menu"
                 aria-expanded={accountOpen}
                 onClick={() => setAccountOpen((v) => !v)}
@@ -155,9 +152,17 @@ export function ToolHeader({
                     onClick={() => setAccountOpen(false)}
                   />
                   <div className="dome-menu" role="menu">
-                    <p className="dome-menu-email" title={email}>
-                      {email}
-                    </p>
+                    {email ? (
+                      <p className="dome-menu-email" title={email}>
+                        {email}
+                      </p>
+                    ) : null}
+                    {showHubLink ? (
+                      <a href={hubHref} role="menuitem" className="dome-menu-item">
+                        <LayoutGrid size={15} strokeWidth={1.75} aria-hidden="true" />
+                        {hubLabel}
+                      </a>
+                    ) : null}
                     <button
                       type="button"
                       role="menuitem"
@@ -171,10 +176,6 @@ export function ToolHeader({
                 </>
               ) : null}
             </div>
-          ) : isAuthenticated ? (
-            <button className="btn btn-neutral" onClick={handleSignOut}>
-              Sign out
-            </button>
           ) : (
             <button className="btn btn-primary" onClick={handleSignIn}>
               Sign in
@@ -216,9 +217,8 @@ export function ToolHeader({
             onClick={() => setMenuOpen(false)}
           />
           <div className="dome-mobile-panel md:hidden">
-            {renderHub("dome-mobile-link", () => setMenuOpen(false))}
-            {navLinks.map((link) => (
-              <span key={link.href}>
+            {navItems.map((link) => (
+              <span key={`${link.href}:${link.label}`}>
                 {Link({
                   href: link.href,
                   className: "dome-mobile-link",
@@ -227,6 +227,16 @@ export function ToolHeader({
                 })}
               </span>
             ))}
+            {isAuthenticated && showHubLink ? (
+              <a
+                href={hubHref}
+                className="dome-mobile-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                <LayoutGrid size={16} strokeWidth={1.75} aria-hidden="true" />
+                {hubLabel}
+              </a>
+            ) : null}
             {isAuthenticated ? (
               <>
                 {email ? (

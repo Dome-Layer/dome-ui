@@ -224,6 +224,7 @@
   border-radius: var(--radius-sm, 6px);
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
 }
 .dome-menu-item:hover {
   background: var(--color-bg-muted);

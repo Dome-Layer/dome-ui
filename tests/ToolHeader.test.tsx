@@ -37,31 +37,37 @@ beforeEach(() => {
 function renderHeader(props: Partial<ComponentProps<typeof ToolHeader>> = {}) {
   return render(
     <AuthProvider>
-      <ToolHeader toolName="Data Intelligence" {...props} />
+      <ToolHeader
+        toolName="Data Intelligence"
+        navLinks={[{ label: "Saved", href: "/saved" }]}
+        {...props}
+      />
     </AuthProvider>
   );
 }
 
+function signIn(email = "fp@domelayer.com") {
+  document.cookie = "dome_auth_token=" + makeJwt({ email });
+}
+
 describe("ToolHeader — signed out", () => {
-  it("renders the tool name and a Sign in button", () => {
+  it("renders the tool name, Home + Saved nav links, and a Sign in button", () => {
     renderHeader();
     expect(screen.getByText("Data Intelligence")).toBeTruthy();
+    expect(screen.getByText("Home")).toBeTruthy();
+    expect(screen.getByText("Saved")).toBeTruthy();
     expect(screen.getByRole("button", { name: /sign in/i })).toBeTruthy();
   });
 
-  it("shows the All tools hub link by default", () => {
+  it("does NOT surface All tools when signed out (it lives in the account menu)", () => {
     renderHeader();
-    expect(screen.getAllByText("All tools").length).toBeGreaterThan(0);
-  });
-
-  it("hides the hub link when showHubLink is false", () => {
-    renderHeader({ showHubLink: false });
     expect(screen.queryByText("All tools")).toBeNull();
   });
 
-  it("renders a custom hub label", () => {
-    renderHeader({ hubLabel: "Dome apps" });
-    expect(screen.getByText("Dome apps")).toBeTruthy();
+  it("omits the Home link when showHomeLink is false", () => {
+    renderHeader({ showHomeLink: false });
+    expect(screen.queryByText("Home")).toBeNull();
+    expect(screen.getByText("Saved")).toBeTruthy();
   });
 
   it("calls a custom onSignIn handler instead of redirecting", () => {
@@ -89,8 +95,8 @@ describe("ToolHeader — width", () => {
 });
 
 describe("ToolHeader — signed in", () => {
-  it("shows an account avatar with the user initial, then reveals email + sign out", async () => {
-    document.cookie = "dome_auth_token=" + makeJwt({ email: "fp@domelayer.com" });
+  it("shows an account avatar; menu reveals email, All tools, and Sign out", async () => {
+    signIn();
     renderHeader();
 
     const avatar = await screen.findByLabelText(/account: fp@domelayer\.com/i);
@@ -99,6 +105,24 @@ describe("ToolHeader — signed in", () => {
 
     fireEvent.click(avatar);
     expect(screen.getByText("fp@domelayer.com")).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: /all tools/i })).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: /sign out/i })).toBeTruthy();
+  });
+
+  it("omits All tools from the account menu when showHubLink is false", async () => {
+    signIn();
+    renderHeader({ showHubLink: false });
+    const avatar = await screen.findByLabelText(/account/i);
+    fireEvent.click(avatar);
+    expect(screen.queryByRole("menuitem", { name: /all tools/i })).toBeNull();
+    expect(screen.getByRole("menuitem", { name: /sign out/i })).toBeTruthy();
+  });
+
+  it("renders a custom hub label in the account menu", async () => {
+    signIn();
+    renderHeader({ hubLabel: "Dome apps" });
+    const avatar = await screen.findByLabelText(/account/i);
+    fireEvent.click(avatar);
+    expect(screen.getByRole("menuitem", { name: /dome apps/i })).toBeTruthy();
   });
 });

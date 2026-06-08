@@ -8,12 +8,12 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./utils": {
-      "import": "./dist/utils.js",
-      "types": "./dist/utils.d.ts"
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.js"
     },
     "./tokens.css": "./dist/tokens.css",
     "./components.css": "./dist/components.css",
@@ -21,6 +21,12 @@
       "types": "./dist/tailwind-preset.d.ts",
       "import": "./dist/tailwind-preset.js",
       "require": "./dist/tailwind-preset.cjs"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "utils": ["./dist/utils.d.ts"],
+      "tailwind-preset": ["./dist/tailwind-preset.d.ts"]
     }
   },
   "files": [
