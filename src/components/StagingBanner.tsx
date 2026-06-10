@@ -35,9 +35,13 @@ export function StagingBanner({ environment, className }: StagingBannerProps) {
         fontWeight: 600,
         letterSpacing: "0.08em",
         textTransform: "uppercase",
-        color: "var(--color-warning)",
-        background: "var(--color-warning-subtle)",
-        borderBottom: "1px solid var(--color-warning-border)",
+        // Fixed DOME "warning orange" (token-independent) so the banner is
+        // identical on every tool AND the marketing site, regardless of each
+        // app's theme tokens. The translucent tint adapts to any light/dark
+        // background while the orange text stays legible on both.
+        color: "#D97706",
+        background: "rgba(217, 119, 6, 0.12)",
+        borderBottom: "1px solid rgba(217, 119, 6, 0.35)",
       }}
     >
       Staging environment — not production

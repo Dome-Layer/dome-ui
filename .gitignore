@@ -1,6 +1,7 @@
 node_modules/
 dist/
 *.tsbuildinfo
+vitest.shims.d.ts
 
 .env
 .env.*

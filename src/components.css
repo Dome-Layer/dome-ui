@@ -1,0 +1,298 @@
+/* ============================================================================
+ * @dome-layer/dome-ui — component chrome
+ * Self-contained styles for shared components (ToolHeader, buttons, theme toggle)
+ * so consumers don't have to re-declare them in their own globals.css.
+ * Import once per app AFTER tokens.css:
+ *     @import "@dome-layer/dome-ui/tokens.css";
+ *     @import "@dome-layer/dome-ui/components.css";
+ * All colors are design tokens — works in light and [data-theme="dark"].
+ * ========================================================================== */
+
+/* ─── Site header (ToolHeader shell) ─────────────────────────────────── */
+.site-header {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 0.5px solid var(--color-border-default);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .site-header {
+  background: rgba(10, 10, 10, 0.9);
+  border-bottom-color: var(--color-border-subtle);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-in-out);
+  white-space: nowrap;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  font-family: inherit;
+}
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+.btn-primary:active {
+  background: var(--color-accent-active);
+  transform: scale(0.98);
+}
+
+.btn-neutral {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+}
+.btn-neutral:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-strong);
+}
+.btn-neutral:active {
+  transform: scale(0.98);
+}
+
+.btn-sm {
+  font-size: 12px;
+  padding: 8px 16px;
+}
+
+/* ─── Theme toggle ───────────────────────────────────────────────────── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+}
+.theme-toggle:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+}
+
+/* ─── ToolHeader: brand + wayfinding ─────────────────────────────────── */
+.dome-brand {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.dome-toolname {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-border-default);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 639px) {
+  .dome-toolname {
+    display: none;
+  }
+}
+
+/* ─── ToolHeader: nav links (desktop) ────────────────────────────────── */
+.dome-navlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--duration-fast) ease;
+}
+.dome-navlink:hover {
+  color: var(--color-text-primary);
+}
+
+/* ─── ToolHeader: account menu ───────────────────────────────────────── */
+.dome-account {
+  position: relative;
+  display: inline-flex;
+}
+.dome-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+.dome-avatar:hover {
+  border-color: var(--color-border-strong);
+}
+.dome-avatar:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+}
+
+.dome-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: default;
+}
+
+.dome-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  min-width: 220px;
+  padding: 6px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg, 0 8px 28px rgba(0, 0, 0, 0.12));
+}
+[data-theme="dark"] .dome-menu {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-strong);
+}
+.dome-menu-email {
+  margin: 0 0 4px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.dome-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+}
+.dome-menu-item:hover {
+  background: var(--color-bg-muted);
+}
+.dome-menu-item:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+}
+
+/* ─── ToolHeader: mobile menu ────────────────────────────────────────── */
+.dome-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+.dome-menu-btn:hover {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+}
+.dome-menu-btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+}
+
+.dome-mobile-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px 16px;
+  background: var(--color-bg-base);
+  border-bottom: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-lg, 0 8px 28px rgba(0, 0, 0, 0.12));
+}
+[data-theme="dark"] .dome-mobile-panel {
+  background: var(--color-bg-subtle);
+  border-bottom-color: var(--color-border-strong);
+}
+.dome-mobile-panel .btn {
+  width: 100%;
+  margin-top: 8px;
+}
+.dome-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+.dome-mobile-link:hover {
+  background: var(--color-bg-muted);
+}

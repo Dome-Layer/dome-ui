@@ -1,6 +1,6 @@
 {
   "name": "@dome-layer/dome-ui",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Shared React component library for the DOME portfolio — design tokens, auth/theme utilities, and UI components.",
   "type": "module",
   "sideEffects": [
@@ -8,26 +8,33 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./utils": {
-      "import": "./dist/utils.js",
-      "types": "./dist/utils.d.ts"
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.js"
     },
     "./tokens.css": "./dist/tokens.css",
+    "./components.css": "./dist/components.css",
     "./tailwind-preset": {
       "types": "./dist/tailwind-preset.d.ts",
       "import": "./dist/tailwind-preset.js",
       "require": "./dist/tailwind-preset.cjs"
     }
   },
+  "typesVersions": {
+    "*": {
+      "utils": ["./dist/utils.d.ts"],
+      "tailwind-preset": ["./dist/tailwind-preset.d.ts"]
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepare": "tsup && cp src/tokens.css dist/tokens.css",
-    "build": "tsup && cp src/tokens.css dist/tokens.css",
+    "prepare": "tsup && cp src/tokens.css dist/tokens.css && cp src/components.css dist/components.css",
+    "build": "tsup && cp src/tokens.css dist/tokens.css && cp src/components.css dist/components.css",
     "dev": "tsup --watch",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",

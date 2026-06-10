@@ -11,7 +11,12 @@ export {
   authHeaders,
   isAuthenticated,
   sanitizeRedirect,
+  getHubUrl,
+  getUserClaims,
+  getUserEmail,
 } from "./auth";
+
+export type { UserClaims } from "./auth";
 
 export {
   getTheme,
