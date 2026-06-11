@@ -11,6 +11,19 @@ updates:
     groups:
       npm-minor-patch:
         update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        versions: [">= 6.0"]
+      - dependency-name: "eslint"
+        versions: [">= 10.0"]
+      - dependency-name: "vite"
+        versions: [">= 8.0"]
+      - dependency-name: "react"
+        versions: [">= 19.0"]
+      - dependency-name: "react-dom"
+        versions: [">= 19.0"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
