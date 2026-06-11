@@ -12,6 +12,8 @@ updates:
       npm-minor-patch:
         update-types: ["minor", "patch"]
     ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "typescript"
         versions: [">= 6.0"]
       - dependency-name: "eslint"
