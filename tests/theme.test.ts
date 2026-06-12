@@ -1,3 +1,4 @@
+// ci-gate verification — this line can be removed after the test PR is merged or closed
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getTheme, setTheme, toggleTheme } from "../src/theme";
 
