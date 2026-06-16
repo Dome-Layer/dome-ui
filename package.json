@@ -1,6 +1,6 @@
 {
   "name": "@dome-layer/dome-ui",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Shared React component library for the DOME portfolio — design tokens, auth/theme utilities, and UI components.",
   "type": "module",
   "sideEffects": [
@@ -33,7 +33,6 @@
     "dist"
   ],
   "scripts": {
-    "prepare": "tsup && cp src/tokens.css dist/tokens.css && cp src/components.css dist/components.css",
     "build": "tsup && cp src/tokens.css dist/tokens.css && cp src/components.css dist/components.css",
     "dev": "tsup --watch",
     "lint": "eslint src/",
@@ -69,11 +68,11 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tsup": "^8.0.0",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.61.0",
+    "typescript": "~5.4.0",
+    "typescript-eslint": "^8.0.0",
     "vitest": "^3.2.6",
-    "storybook": "^10.4.3",
-    "@storybook/react-vite": "^10.4.3"
+    "storybook": "^10.4.1",
+    "@storybook/react-vite": "^10.4.1"
   },
   "license": "MIT",
   "repository": {
