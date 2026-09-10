@@ -1,6 +1,9 @@
 {
   "name": "@dome-layer/dome-ui",
   "version": "1.2.1",
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Shared React component library for the DOME portfolio — design tokens, auth/theme utilities, and UI components.",
   "type": "module",
   "sideEffects": [
