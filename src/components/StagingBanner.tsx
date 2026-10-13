@@ -35,16 +35,17 @@ export function StagingBanner({ environment, className }: StagingBannerProps) {
         fontWeight: 600,
         letterSpacing: "0.08em",
         textTransform: "uppercase",
-        // Fixed DOME "warning orange" (token-independent) so the banner is
-        // identical on every tool AND the marketing site, regardless of each
-        // app's theme tokens. The translucent tint adapts to any light/dark
-        // background while the orange text stays legible on both.
-        color: "#D97706",
-        background: "rgba(217, 119, 6, 0.12)",
-        borderBottom: "1px solid rgba(217, 119, 6, 0.35)",
+        // Fixed DOME warning amber (token-independent) so the banner is
+        // identical on every tool and the marketing site, whatever each app's
+        // theme tokens. Opaque, not a translucent tint: the old orange text on
+        // a 12% tint was 2.8:1 in the light theme. Deep amber on pale amber is
+        // 6.4:1 in both themes (design system v2.2).
+        color: "#92400E",
+        background: "#FEF3C7",
+        borderBottom: "1px solid #F59E0B",
       }}
     >
-      Staging environment — not production
+      Staging environment: not production
     </div>
   );
 }
