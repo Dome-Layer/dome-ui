@@ -1,7 +1,7 @@
 interface StagingBannerProps {
   /**
    * The deploy environment. The banner renders only when this equals
-   * "staging". Consumers pass their existing environment signal — e.g.
+   * "staging". Consumers pass their existing environment signal, e.g.
    * `process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT` (Next.js) or
    * `import.meta.env.VITE_SENTRY_ENVIRONMENT` (Vite).
    */

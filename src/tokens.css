@@ -85,7 +85,7 @@
   --ease-in-out:      cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ─── Semantic tokens — dark ─────────────────────────────────────── */
+/* ─── Semantic tokens: dark ───────────────────────────────────── */
 [data-theme="dark"] {
   --color-bg-base:          #0A0A0A;
   --color-bg-subtle:        #111111;

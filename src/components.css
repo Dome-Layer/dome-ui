@@ -1,11 +1,11 @@
 /* ============================================================================
- * @dome-layer/dome-ui — component chrome
+ * @dome-layer/dome-ui: component chrome
  * Self-contained styles for shared components (ToolHeader, buttons, theme toggle)
  * so consumers don't have to re-declare them in their own globals.css.
  * Import once per app AFTER tokens.css:
  *     @import "@dome-layer/dome-ui/tokens.css";
  *     @import "@dome-layer/dome-ui/components.css";
- * All colors are design tokens — works in light and [data-theme="dark"].
+ * All colors are design tokens, so it works in light and [data-theme="dark"].
  * ========================================================================== */
 
 /* ─── Site header (ToolHeader shell) ─────────────────────────────────── */
