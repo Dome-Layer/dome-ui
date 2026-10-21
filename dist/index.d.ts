@@ -57,7 +57,7 @@ type LinkRenderer = (props: {
 interface ToolHeaderProps {
     /** Tool name, rendered next to the logo for wayfinding. */
     toolName: string;
-    /** Tool home — the logo and the "Home" nav link point here. Default "/". */
+    /** Tool home: the logo and the "Home" nav link point here. Default "/". */
     homeHref?: string;
     /** Show the "Home" nav link (paired with navLinks). Default true. Multi-page tools with a sidebar (DocI) set this false. */
     showHomeLink?: boolean;
@@ -110,7 +110,7 @@ declare function Card({ children, className }: CardProps): react_jsx_runtime.JSX
 interface StagingBannerProps {
     /**
      * The deploy environment. The banner renders only when this equals
-     * "staging". Consumers pass their existing environment signal — e.g.
+     * "staging". Consumers pass their existing environment signal, e.g.
      * `process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT` (Next.js) or
      * `import.meta.env.VITE_SENTRY_ENVIRONMENT` (Vite).
      */

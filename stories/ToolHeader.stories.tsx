@@ -30,7 +30,7 @@ export const WithNavLinks: Story = {
   },
 };
 
-/** Full-width / edge-aligned — for tools whose working view spans the viewport (e.g. DI dashboard, DocI). */
+/** Full-width / edge-aligned: for tools whose working view spans the viewport (e.g. DI dashboard, DocI). */
 export const Fluid: Story = {
   args: {
     toolName: "Data Intelligence",
@@ -70,7 +70,7 @@ export const SignedIn: Story = {
   ],
 };
 
-/** Mobile viewport — nav collapses behind the menu button. */
+/** Mobile viewport: nav collapses behind the menu button. */
 export const Mobile: Story = {
   args: {
     toolName: "Process Analyzer",

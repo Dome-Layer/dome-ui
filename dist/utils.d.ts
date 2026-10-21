@@ -13,7 +13,7 @@ declare function sanitizeRedirect(raw: string | null | undefined): string;
 /**
  * Host-aware URL of the logged-in tools hub (`/app` on the marketing site).
  * On a staging host the hub lives at `staging.domelayer.com/app`; on production
- * (and anywhere else, e.g. localhost preview) we point at production — the only
+ * (and anywhere else, e.g. localhost preview) we point at production, the only
  * reachable real target. Mirrors the website's `toolHref` philosophy.
  */
 declare function getHubUrl(): string;
@@ -25,7 +25,7 @@ interface UserClaims {
 }
 /**
  * Decode the (already-trusted) session JWT payload client-side to surface the
- * signed-in user's identity for display — no network round-trip (keeps the
+ * signed-in user's identity for display, with no network round-trip (keeps the
  * DA-005 "verify locally" property). Returns null for a missing/opaque/malformed
  * token. NOT a verification step: the cookie is the trusted session; this is
  * display-only.

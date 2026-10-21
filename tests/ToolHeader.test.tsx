@@ -50,7 +50,7 @@ function signIn(email = "fp@domelayer.com") {
   document.cookie = "dome_auth_token=" + makeJwt({ email });
 }
 
-describe("ToolHeader — signed out", () => {
+describe("ToolHeader, signed out", () => {
   it("renders the tool name, Home + Saved nav links, and a Sign in button", () => {
     renderHeader();
     expect(screen.getByText("Data Intelligence")).toBeTruthy();
@@ -78,7 +78,7 @@ describe("ToolHeader — signed out", () => {
   });
 });
 
-describe("ToolHeader — width", () => {
+describe("ToolHeader, width", () => {
   it("uses a centered max-width container by default (contained)", () => {
     const { container } = renderHeader();
     const inner = container.querySelector("header > div");
@@ -94,7 +94,7 @@ describe("ToolHeader — width", () => {
   });
 });
 
-describe("ToolHeader — signed in", () => {
+describe("ToolHeader, signed in", () => {
   it("shows an account avatar; menu reveals email, All tools, and Sign out", async () => {
     signIn();
     renderHeader();

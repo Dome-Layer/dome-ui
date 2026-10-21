@@ -23,7 +23,7 @@ type LinkRenderer = (props: {
 interface ToolHeaderProps {
   /** Tool name, rendered next to the logo for wayfinding. */
   toolName: string;
-  /** Tool home — the logo and the "Home" nav link point here. Default "/". */
+  /** Tool home: the logo and the "Home" nav link point here. Default "/". */
   homeHref?: string;
   /** Show the "Home" nav link (paired with navLinks). Default true. Multi-page tools with a sidebar (DocI) set this false. */
   showHomeLink?: boolean;
