@@ -5,6 +5,7 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "staging"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 5
@@ -26,5 +27,6 @@ updates:
         versions: [">= 19.0"]
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "staging"
     schedule:
       interval: "monthly"
