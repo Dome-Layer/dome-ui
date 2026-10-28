@@ -11,12 +11,10 @@ import { defineConfig } from "vitest/config";
 // The flag does not exist before Node 22 and Node exits on an unknown flag, so
 // the option is omitted entirely on older runtimes: CI is on Node 20 and is
 // unaffected by this block. Remove it once local and CI Node versions match.
+// (Vitest 4 moved the old poolOptions.<pool>.execArgv to this top-level option.)
 const nodeMajor = Number(process.versions.node.split(".")[0]);
-const execArgv = ["--no-experimental-webstorage"];
 const nodeStorageFix =
-  nodeMajor >= 22
-    ? { poolOptions: { forks: { execArgv }, threads: { execArgv } } }
-    : {};
+  nodeMajor >= 22 ? { execArgv: ["--no-experimental-webstorage"] } : {};
 
 export default defineConfig({
   test: {

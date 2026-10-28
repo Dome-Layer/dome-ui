@@ -5,20 +5,21 @@ beforeEach(() => {
   document.cookie = "dome-theme=; Max-Age=0";
   localStorage.clear();
   document.documentElement.removeAttribute("data-theme");
+  vi.unstubAllGlobals();
 });
+
+// jsdom has no matchMedia, and Vitest 4 no longer lets vi.spyOn create a missing method.
+const stubPrefersDark = (matches: boolean) =>
+  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches }) as MediaQueryList));
 
 describe("getTheme", () => {
   it("returns light by default when no cookie, localStorage, or system pref", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue({
-      matches: false,
-    } as MediaQueryList);
+    stubPrefersDark(false);
     expect(getTheme()).toBe("light");
   });
 
   it("returns dark when system prefers dark", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue({
-      matches: true,
-    } as MediaQueryList);
+    stubPrefersDark(true);
     expect(getTheme()).toBe("dark");
   });
 
