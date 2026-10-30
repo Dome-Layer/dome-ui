@@ -1,0 +1,24 @@
+/* Storybook only. The components use a few Tailwind utilities that each tool's own Tailwind
+ * build generates (it scans this package). Storybook has no Tailwind, so the ones ToolHeader
+ * needs are written out here with Tailwind's values, letting the stories show the real layout.
+ * Not shipped: dist/ only carries tokens.css and components.css. */
+.sticky { position: sticky; }
+.top-0 { top: 0; }
+.z-40 { z-index: 40; }
+.flex { display: flex; }
+.hidden { display: none; }
+.h-16 { height: 4rem; }
+.w-full { width: 100%; }
+.min-w-0 { min-width: 0; }
+.max-w-\[1152px\] { max-width: 1152px; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+@media (min-width: 768px) {
+  .md\:flex { display: flex; }
+  .md\:hidden { display: none; }
+  .md\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+}

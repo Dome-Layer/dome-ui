@@ -1,4 +1,9 @@
-import { useState, type ReactNode, type CSSProperties } from "react";
+import {
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+  type CSSProperties,
+} from "react";
 import { LayoutGrid, Menu, X, LogOut } from "lucide-react";
 import { DomeLogo } from "./DomeLogo";
 import { ThemeToggle } from "./ThemeToggle";
@@ -17,6 +22,7 @@ type LinkRenderer = (props: {
   className?: string;
   style?: CSSProperties;
   "aria-label"?: string;
+  "aria-current"?: "page";
   onClick?: () => void;
 }) => ReactNode;
 
@@ -43,6 +49,11 @@ interface ToolHeaderProps {
   hubLabel?: string;
   /** Custom sign-in handler (e.g. open a modal). Defaults to redirecting to the auth site. */
   onSignIn?: () => void;
+  /**
+   * Path of the page being shown, for the current-page marker (e.g. Next.js `usePathname()`,
+   * React Router `useLocation().pathname`). Defaults to the browser location, read after mount.
+   */
+  currentPath?: string;
 }
 
 function DefaultLink(props: {
@@ -51,9 +62,70 @@ function DefaultLink(props: {
   className?: string;
   style?: CSSProperties;
   "aria-label"?: string;
+  "aria-current"?: "page";
   onClick?: () => void;
 }) {
   return <a {...props} />;
+}
+
+// Browser path for the current-page marker when the tool does not pass currentPath. Re-read on
+// back/forward and, where the Navigation API exists, on client-side route changes. Null on the
+// server, so the marker never causes a hydration mismatch.
+function subscribeToLocation(onChange: () => void) {
+  const navigation = (window as Window & { navigation?: EventTarget }).navigation;
+  window.addEventListener("popstate", onChange);
+  navigation?.addEventListener("currententrychange", onChange);
+  return () => {
+    window.removeEventListener("popstate", onChange);
+    navigation?.removeEventListener("currententrychange", onChange);
+  };
+}
+
+function useBrowserPath(): string | null {
+  return useSyncExternalStore(
+    subscribeToLocation,
+    () => window.location.pathname,
+    () => null
+  );
+}
+
+function normalisePath(path: string): string {
+  return path.length > 1 ? path.replace(/\/+$/, "") : path;
+}
+
+// The path an href points to on this site, or null for another origin.
+function pathOf(href: string): string | null {
+  try {
+    const url = new URL(href, "http://dome.invalid");
+    if (url.origin !== "http://dome.invalid" && url.origin !== window.location.origin) return null;
+    return normalisePath(url.pathname);
+  } catch {
+    return null;
+  }
+}
+
+// Index of the nav item for the page being shown: an exact match, or the longest link the path
+// sits under (e.g. /saved/42 under Saved). The home link only matches exactly.
+function currentIndex(
+  items: { href: string; exact: boolean }[],
+  path: string | null
+): number {
+  if (path === null) return -1;
+  const here = normalisePath(path);
+  let best = -1;
+  let bestLength = -1;
+  items.forEach((item, i) => {
+    const target = pathOf(item.href);
+    if (target === null) return;
+    const matches =
+      here === target ||
+      (!item.exact && target !== "/" && here.startsWith(`${target}/`));
+    if (matches && target.length > bestLength) {
+      best = i;
+      bestLength = target.length;
+    }
+  });
+  return best;
 }
 
 export function ToolHeader({
@@ -68,6 +140,7 @@ export function ToolHeader({
   showHubLink = true,
   hubLabel = "All tools",
   onSignIn,
+  currentPath,
 }: ToolHeaderProps) {
   const { isAuthenticated, user, signOut } = useAuth();
   const Link = renderLink ?? DefaultLink;
@@ -79,11 +152,13 @@ export function ToolHeader({
   const initial = email ? email.charAt(0).toUpperCase() : "?";
   const hubHref = getHubUrl();
 
-  // In-tool navigation, left→right: Home (optional) then tool-specific links (Saved…).
-  const navItems: NavLink[] = [
-    ...(showHomeLink ? [{ label: homeLabel, href: homeHref }] : []),
-    ...navLinks,
+  // In-tool navigation, left to right: Home (optional) then tool-specific links (Saved...).
+  const navItems = [
+    ...(showHomeLink ? [{ label: homeLabel, href: homeHref, exact: true }] : []),
+    ...navLinks.map((link) => ({ ...link, exact: false })),
   ];
+  const browserPath = useBrowserPath();
+  const current = currentIndex(navItems, currentPath ?? browserPath);
 
   const handleSignIn = () => {
     if (onSignIn) {
@@ -100,7 +175,7 @@ export function ToolHeader({
   };
 
   return (
-    <header className="site-header sticky top-0 z-40">
+    <header className="site-header dome-bar sticky top-0 z-40">
       <div
         className={clsx(
           "h-16 flex items-center justify-between gap-4 px-6 md:px-8",
@@ -113,18 +188,19 @@ export function ToolHeader({
             href: homeHref,
             "aria-label": "Home",
             className: "dome-brand",
-            children: <DomeLogo size="md" />,
+            children: <DomeLogo size="md" variant="white" />,
           })}
           {toolName ? <span className="dome-toolname">{toolName}</span> : null}
         </div>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-4">
-          {navItems.map((link) => (
+          {navItems.map((link, i) => (
             <span key={`${link.href}:${link.label}`}>
               {Link({
                 href: link.href,
-                className: "dome-navlink",
+                className: clsx("dome-navlink", i === current && "is-current"),
+                "aria-current": i === current ? "page" : undefined,
                 children: link.label,
               })}
             </span>
@@ -177,7 +253,7 @@ export function ToolHeader({
               ) : null}
             </div>
           ) : (
-            <button className="btn btn-primary" onClick={handleSignIn}>
+            <button type="button" className="btn btn-inverse" onClick={handleSignIn}>
               Sign in
             </button>
           )}
@@ -217,11 +293,12 @@ export function ToolHeader({
             onClick={() => setMenuOpen(false)}
           />
           <div className="dome-mobile-panel md:hidden">
-            {navItems.map((link) => (
+            {navItems.map((link, i) => (
               <span key={`${link.href}:${link.label}`}>
                 {Link({
                   href: link.href,
-                  className: "dome-mobile-link",
+                  className: clsx("dome-mobile-link", i === current && "is-current"),
+                  "aria-current": i === current ? "page" : undefined,
                   onClick: () => setMenuOpen(false),
                   children: link.label,
                 })}

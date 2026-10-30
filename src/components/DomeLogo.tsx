@@ -1,13 +1,22 @@
 interface DomeLogoProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
+  /**
+   * "accent" (default) is the brand blue for white or black surfaces; "white" is the same
+   * wordmark for the blue surface and the top bar (design system v2.7, "Wordmark").
+   */
+  variant?: "accent" | "white";
+  /** Explicit fill; overrides variant. */
   color?: string;
 }
+
+const LOGO_FILL = { accent: "#0080FF", white: "#FFFFFF" } as const;
 
 export function DomeLogo({
   className = "",
   size = "md",
-  color = "#0080FF",
+  variant = "accent",
+  color = LOGO_FILL[variant],
 }: DomeLogoProps) {
   const heights = { sm: 24, md: 32, lg: 44, xl: 56 };
   const h = heights[size];
@@ -47,7 +56,8 @@ export function DomeLogo({
 export function DomeLogoLarge({
   className = "",
   size = "lg",
-  color = "#0080FF",
+  variant = "accent",
+  color = LOGO_FILL[variant],
 }: DomeLogoProps) {
   const heights = { sm: 36, md: 48, lg: 64, xl: 80 };
   const h = heights[size];

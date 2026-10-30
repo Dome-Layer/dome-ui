@@ -25,6 +25,7 @@ const domePreset = {
         "dome-accent-hover": "var(--color-accent-hover)",
         "dome-accent-active": "var(--color-accent-active)",
         "dome-accent-subtle": "var(--color-accent-subtle)",
+        "dome-bar": "var(--color-bar)",
 
         "dome-success": "var(--color-success)",
         "dome-success-subtle": "var(--color-success-subtle)",
