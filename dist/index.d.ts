@@ -1,29 +1,35 @@
-import * as react_jsx_runtime from 'react/jsx-runtime';
+import * as react from 'react';
 import { ReactNode, CSSProperties, ButtonHTMLAttributes } from 'react';
 
 interface DomeLogoProps {
     className?: string;
     size?: "sm" | "md" | "lg" | "xl";
+    /**
+     * "accent" (default) is the brand blue for white or black surfaces; "white" is the same
+     * wordmark for the blue surface and the top bar (design system v2.7, "Wordmark").
+     */
+    variant?: "accent" | "white";
+    /** Explicit fill; overrides variant. */
     color?: string;
 }
-declare function DomeLogo({ className, size, color, }: DomeLogoProps): react_jsx_runtime.JSX.Element;
-declare function DomeLogoLarge({ className, size, color, }: DomeLogoProps): react_jsx_runtime.JSX.Element;
+declare function DomeLogo({ className, size, variant, color, }: DomeLogoProps): react.JSX.Element;
+declare function DomeLogoLarge({ className, size, variant, color, }: DomeLogoProps): react.JSX.Element;
 declare function DomeSymbol({ className, size, }: {
     className?: string;
     size?: "sm" | "md" | "lg" | "xl";
-}): react_jsx_runtime.JSX.Element;
+}): react.JSX.Element;
 declare function DomeFavicon({ className, size, }: {
     className?: string;
     size?: number;
-}): react_jsx_runtime.JSX.Element;
+}): react.JSX.Element;
 
-declare function ThemeToggle(): react_jsx_runtime.JSX.Element;
+declare function ThemeToggle(): react.JSX.Element;
 
 interface AuthGuardProps {
     children: React.ReactNode;
     skip?: boolean;
 }
-declare function AuthGuard({ children, skip }: AuthGuardProps): react_jsx_runtime.JSX.Element;
+declare function AuthGuard({ children, skip }: AuthGuardProps): react.JSX.Element;
 
 interface AuthUser {
     email?: string;
@@ -39,7 +45,7 @@ interface AuthProviderProps {
     children: ReactNode;
     onSignOut?: () => Promise<void>;
 }
-declare function AuthProvider({ children, onSignOut }: AuthProviderProps): react_jsx_runtime.JSX.Element;
+declare function AuthProvider({ children, onSignOut }: AuthProviderProps): react.JSX.Element;
 declare function useAuth(): AuthState;
 
 interface NavLink {
@@ -52,6 +58,7 @@ type LinkRenderer = (props: {
     className?: string;
     style?: CSSProperties;
     "aria-label"?: string;
+    "aria-current"?: "page";
     onClick?: () => void;
 }) => ReactNode;
 interface ToolHeaderProps {
@@ -77,14 +84,19 @@ interface ToolHeaderProps {
     hubLabel?: string;
     /** Custom sign-in handler (e.g. open a modal). Defaults to redirecting to the auth site. */
     onSignIn?: () => void;
+    /**
+     * Path of the page being shown, for the current-page marker (e.g. Next.js `usePathname()`,
+     * React Router `useLocation().pathname`). Defaults to the browser location, read after mount.
+     */
+    currentPath?: string;
 }
-declare function ToolHeader({ toolName, homeHref, showHomeLink, homeLabel, navLinks, renderLink, extra, width, showHubLink, hubLabel, onSignIn, }: ToolHeaderProps): react_jsx_runtime.JSX.Element;
+declare function ToolHeader({ toolName, homeHref, showHomeLink, homeLabel, navLinks, renderLink, extra, width, showHubLink, hubLabel, onSignIn, currentPath, }: ToolHeaderProps): react.JSX.Element;
 
 interface ToolFooterProps {
     toolName: string;
     className?: string;
 }
-declare function ToolFooter({ toolName, className }: ToolFooterProps): react_jsx_runtime.JSX.Element;
+declare function ToolFooter({ toolName, className }: ToolFooterProps): react.JSX.Element;
 
 type BadgeVariant = "default" | "success" | "warning" | "error" | "accent";
 interface BadgeProps {
@@ -92,20 +104,20 @@ interface BadgeProps {
     children: ReactNode;
     className?: string;
 }
-declare function Badge({ variant, children, className, }: BadgeProps): react_jsx_runtime.JSX.Element;
+declare function Badge({ variant, children, className, }: BadgeProps): react.JSX.Element;
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "ghost";
     loading?: boolean;
     children: ReactNode;
 }
-declare function Button({ variant, loading, disabled, className, children, style, ...props }: ButtonProps): react_jsx_runtime.JSX.Element;
+declare function Button({ variant, loading, disabled, className, children, style, ...props }: ButtonProps): react.JSX.Element;
 
 interface CardProps {
     children: ReactNode;
     className?: string;
 }
-declare function Card({ children, className }: CardProps): react_jsx_runtime.JSX.Element;
+declare function Card({ children, className }: CardProps): react.JSX.Element;
 
 interface StagingBannerProps {
     /**
@@ -126,7 +138,7 @@ interface StagingBannerProps {
  * needs no Tailwind content-scan entry and can never be purged from a consumer's
  * CSS bundle.
  */
-declare function StagingBanner({ environment, className }: StagingBannerProps): react_jsx_runtime.JSX.Element | null;
+declare function StagingBanner({ environment, className }: StagingBannerProps): react.JSX.Element | null;
 
 declare function clsx(...args: (string | undefined | null | false)[]): string;
 

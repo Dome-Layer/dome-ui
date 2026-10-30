@@ -21,6 +21,80 @@
   border-bottom-color: var(--color-border-subtle);
 }
 
+/* ─── ToolHeader: the blue top bar (DESIGN_SYSTEM v2.7, "Blue surface") ─
+ * Solid --color-bar in both themes, with white wordmark, tool name, links and
+ * icons. Only pure white passes on #0070E0 (4.78:1), so nothing on the bar is
+ * tinted or faded. Focus on the bar is a 2px white outline at a 2px offset
+ * (4.78:1 against the bar; the blue gap keeps it apart from white fills).
+ * The account menu and the phone menu open on the page colour and keep the
+ * normal styles further down. The selectors carry .dome-bar so they outrank a
+ * leftover .site-header rule in a tool's own CSS. */
+.site-header.dome-bar,
+[data-theme="dark"] .site-header.dome-bar {
+  background: var(--color-bar);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 0.5px solid var(--color-bar);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-on-accent);
+}
+.dome-bar .dome-toolname {
+  color: var(--color-text-on-accent);
+  border-left-color: var(--color-text-on-accent);
+}
+.dome-bar .dome-navlink,
+.dome-bar .dome-navlink:hover {
+  color: var(--color-text-on-accent);
+  text-underline-offset: 8px;
+}
+.dome-bar .dome-navlink:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+.dome-bar .dome-navlink.is-current {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+.dome-bar .theme-toggle,
+.dome-bar .dome-menu-btn {
+  color: var(--color-text-on-accent);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+}
+.dome-bar .theme-toggle:hover,
+.dome-bar .dome-menu-btn:hover {
+  color: var(--color-text-on-accent);
+  background: rgba(255, 255, 255, 0.12);
+}
+/* Inverse on the bar, like the Sign in button. Fixed values, not the semantic
+ * accent tokens, which turn dark in the dark theme. */
+.dome-bar .dome-avatar {
+  background: var(--primitive-white);
+  color: var(--primitive-blue-600);
+  border-color: var(--primitive-white);
+}
+.dome-bar .dome-avatar:hover {
+  background: var(--primitive-blue-50);
+  border-color: var(--primitive-blue-50);
+}
+.dome-bar .dome-brand:focus-visible,
+.dome-bar .dome-navlink:focus-visible,
+.dome-bar .dome-avatar:focus-visible,
+.dome-bar .theme-toggle:focus-visible,
+.dome-bar .dome-menu-btn:focus-visible,
+.dome-bar .btn-inverse:focus-visible {
+  outline: 2px solid var(--color-text-on-accent);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.dome-bar .dome-brand:focus-visible {
+  border-radius: var(--radius-sm);
+}
+/* The menus are page-colour surfaces inside the bar: reset the inherited white. */
+.dome-bar .dome-menu,
+.dome-bar .dome-mobile-panel {
+  color: var(--color-text-primary);
+}
+
 /* ─── Buttons ────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
@@ -66,6 +140,20 @@
   border-color: var(--color-border-strong);
 }
 .btn-neutral:active {
+  transform: scale(0.98);
+}
+
+/* Inverse primary: only on the blue surface (the top bar). White fill with
+ * #0066CC text (5.57:1) in both themes, hover #E8F3FF (4.96:1). */
+.btn-inverse {
+  background: var(--primitive-white);
+  color: var(--primitive-blue-600);
+}
+.btn-inverse:hover {
+  background: var(--primitive-blue-50);
+}
+.btn-inverse:active {
+  background: var(--primitive-blue-50);
   transform: scale(0.98);
 }
 
@@ -295,4 +383,12 @@
 }
 .dome-mobile-link:hover {
   background: var(--color-bg-muted);
+}
+/* Current page in the phone menu (page colour): accent text with the bar's
+ * 2px underline. */
+.dome-mobile-link.is-current {
+  color: var(--color-text-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
 }

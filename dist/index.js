@@ -2,10 +2,12 @@
 
 // src/components/DomeLogo.tsx
 import { jsx, jsxs } from "react/jsx-runtime";
+var LOGO_FILL = { accent: "#0080FF", white: "#FFFFFF" };
 function DomeLogo({
   className = "",
   size = "md",
-  color = "#0080FF"
+  variant = "accent",
+  color = LOGO_FILL[variant]
 }) {
   const heights = { sm: 24, md: 32, lg: 44, xl: 56 };
   const h = heights[size];
@@ -57,7 +59,8 @@ function DomeLogo({
 function DomeLogoLarge({
   className = "",
   size = "lg",
-  color = "#0080FF"
+  variant = "accent",
+  color = LOGO_FILL[variant]
 }) {
   const heights = { sm: 36, md: 48, lg: 64, xl: 80 };
   const h = heights[size];
@@ -499,7 +502,10 @@ function useAuth() {
 }
 
 // src/components/ToolHeader.tsx
-import { useState as useState4 } from "react";
+import {
+  useState as useState4,
+  useSyncExternalStore
+} from "react";
 import { LayoutGrid, Menu, X, LogOut } from "lucide-react";
 
 // src/clsx.ts
@@ -512,6 +518,50 @@ import { Fragment as Fragment2, jsx as jsx5, jsxs as jsxs3 } from "react/jsx-run
 function DefaultLink(props) {
   return /* @__PURE__ */ jsx5("a", { ...props });
 }
+function subscribeToLocation(onChange) {
+  const navigation = window.navigation;
+  window.addEventListener("popstate", onChange);
+  navigation?.addEventListener("currententrychange", onChange);
+  return () => {
+    window.removeEventListener("popstate", onChange);
+    navigation?.removeEventListener("currententrychange", onChange);
+  };
+}
+function useBrowserPath() {
+  return useSyncExternalStore(
+    subscribeToLocation,
+    () => window.location.pathname,
+    () => null
+  );
+}
+function normalisePath(path) {
+  return path.length > 1 ? path.replace(/\/+$/, "") : path;
+}
+function pathOf(href) {
+  try {
+    const url = new URL(href, "http://dome.invalid");
+    if (url.origin !== "http://dome.invalid" && url.origin !== window.location.origin) return null;
+    return normalisePath(url.pathname);
+  } catch {
+    return null;
+  }
+}
+function currentIndex(items, path) {
+  if (path === null) return -1;
+  const here = normalisePath(path);
+  let best = -1;
+  let bestLength = -1;
+  items.forEach((item, i) => {
+    const target = pathOf(item.href);
+    if (target === null) return;
+    const matches = here === target || !item.exact && target !== "/" && here.startsWith(`${target}/`);
+    if (matches && target.length > bestLength) {
+      best = i;
+      bestLength = target.length;
+    }
+  });
+  return best;
+}
 function ToolHeader({
   toolName,
   homeHref = "/",
@@ -523,7 +573,8 @@ function ToolHeader({
   width = "contained",
   showHubLink = true,
   hubLabel = "All tools",
-  onSignIn
+  onSignIn,
+  currentPath
 }) {
   const { isAuthenticated, user, signOut } = useAuth();
   const Link = renderLink ?? DefaultLink;
@@ -533,9 +584,11 @@ function ToolHeader({
   const initial = email ? email.charAt(0).toUpperCase() : "?";
   const hubHref = getHubUrl();
   const navItems = [
-    ...showHomeLink ? [{ label: homeLabel, href: homeHref }] : [],
-    ...navLinks
+    ...showHomeLink ? [{ label: homeLabel, href: homeHref, exact: true }] : [],
+    ...navLinks.map((link) => ({ ...link, exact: false }))
   ];
+  const browserPath = useBrowserPath();
+  const current = currentIndex(navItems, currentPath ?? browserPath);
   const handleSignIn = () => {
     if (onSignIn) {
       onSignIn();
@@ -548,7 +601,7 @@ function ToolHeader({
     await signOut();
     window.location.href = `${getAuthSiteUrl()}/login`;
   };
-  return /* @__PURE__ */ jsxs3("header", { className: "site-header sticky top-0 z-40", children: [
+  return /* @__PURE__ */ jsxs3("header", { className: "site-header dome-bar sticky top-0 z-40", children: [
     /* @__PURE__ */ jsxs3(
       "div",
       {
@@ -562,14 +615,15 @@ function ToolHeader({
               href: homeHref,
               "aria-label": "Home",
               className: "dome-brand",
-              children: /* @__PURE__ */ jsx5(DomeLogo, { size: "md" })
+              children: /* @__PURE__ */ jsx5(DomeLogo, { size: "md", variant: "white" })
             }),
             toolName ? /* @__PURE__ */ jsx5("span", { className: "dome-toolname", children: toolName }) : null
           ] }),
           /* @__PURE__ */ jsxs3("nav", { className: "hidden md:flex items-center gap-4", children: [
-            navItems.map((link) => /* @__PURE__ */ jsx5("span", { children: Link({
+            navItems.map((link, i) => /* @__PURE__ */ jsx5("span", { children: Link({
               href: link.href,
-              className: "dome-navlink",
+              className: clsx("dome-navlink", i === current && "is-current"),
+              "aria-current": i === current ? "page" : void 0,
               children: link.label
             }) }, `${link.href}:${link.label}`)),
             isAuthenticated ? /* @__PURE__ */ jsxs3("div", { className: "dome-account", children: [
@@ -617,7 +671,7 @@ function ToolHeader({
                   )
                 ] })
               ] }) : null
-            ] }) : /* @__PURE__ */ jsx5("button", { className: "btn btn-primary", onClick: handleSignIn, children: "Sign in" }),
+            ] }) : /* @__PURE__ */ jsx5("button", { type: "button", className: "btn btn-inverse", onClick: handleSignIn, children: "Sign in" }),
             extra,
             /* @__PURE__ */ jsx5(ThemeToggle, {})
           ] }),
@@ -650,9 +704,10 @@ function ToolHeader({
         }
       ),
       /* @__PURE__ */ jsxs3("div", { className: "dome-mobile-panel md:hidden", children: [
-        navItems.map((link) => /* @__PURE__ */ jsx5("span", { children: Link({
+        navItems.map((link, i) => /* @__PURE__ */ jsx5("span", { children: Link({
           href: link.href,
-          className: "dome-mobile-link",
+          className: clsx("dome-mobile-link", i === current && "is-current"),
+          "aria-current": i === current ? "page" : void 0,
           onClick: () => setMenuOpen(false),
           children: link.label
         }) }, `${link.href}:${link.label}`)),

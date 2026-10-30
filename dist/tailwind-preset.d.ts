@@ -22,6 +22,7 @@ declare const domePreset: {
                 "dome-accent-hover": string;
                 "dome-accent-active": string;
                 "dome-accent-subtle": string;
+                "dome-bar": string;
                 "dome-success": string;
                 "dome-success-subtle": string;
                 "dome-success-border": string;

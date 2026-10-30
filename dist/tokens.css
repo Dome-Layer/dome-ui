@@ -59,6 +59,10 @@
   --color-accent-active:    #004D99;
   --color-accent-subtle:    #E8F3FF;
 
+  /* Top bar, every page, same in both themes (DESIGN_SYSTEM v2.5 to v2.7, "Blue surface").
+     Only pure white passes on it (4.78:1). */
+  --color-bar:              #0070E0;
+
   --color-focus-ring:       rgba(0, 128, 255, 0.25);
 
   --color-success:          #16A34A;

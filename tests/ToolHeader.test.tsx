@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { ToolHeader } from "../src/components/ToolHeader";
 import { AuthProvider } from "../src/components/AuthContext";
@@ -124,5 +124,140 @@ describe("ToolHeader, signed in", () => {
     const avatar = await screen.findByLabelText(/account/i);
     fireEvent.click(avatar);
     expect(screen.getByRole("menuitem", { name: /dome apps/i })).toBeTruthy();
+  });
+});
+
+describe("ToolHeader, blue bar (design system v2.7)", () => {
+  it("renders the bar surface with the white wordmark", () => {
+    const { container } = renderHeader();
+    const header = container.querySelector("header");
+    expect(header?.classList.contains("dome-bar")).toBe(true);
+    const fills = Array.from(
+      container.querySelectorAll(".dome-brand svg path, .dome-brand svg ellipse")
+    ).map((el) => el.getAttribute("fill"));
+    expect(fills.length).toBeGreaterThan(0);
+    expect(new Set(fills)).toEqual(new Set(["#FFFFFF"]));
+  });
+
+  it("uses the inverse Sign in on the bar and the filled primary in the phone menu", () => {
+    renderHeader();
+    const barSignIn = screen.getByRole("button", { name: /sign in/i });
+    expect(barSignIn.className).toContain("btn-inverse");
+    expect(barSignIn.className).not.toContain("btn-primary");
+
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+    const [, panelSignIn] = screen.getAllByRole("button", { name: /sign in/i });
+    expect(panelSignIn.className).toContain("btn-primary");
+    expect(panelSignIn.closest(".dome-mobile-panel")).toBeTruthy();
+  });
+});
+
+describe("ToolHeader, current page", () => {
+  beforeEach(() => {
+    window.history.replaceState(null, "", "/");
+  });
+
+  function current() {
+    return Array.from(document.querySelectorAll('[aria-current="page"]'));
+  }
+
+  it("marks the link for currentPath with aria-current and the underline class", () => {
+    renderHeader({ currentPath: "/saved" });
+    const marked = current();
+    expect(marked).toHaveLength(1);
+    expect(marked[0].textContent).toBe("Saved");
+    expect(marked[0].className).toContain("dome-navlink");
+    expect(marked[0].className).toContain("is-current");
+    expect(screen.getByText("Home").getAttribute("aria-current")).toBeNull();
+  });
+
+  it("marks a link the path sits under, but Home only on an exact match", () => {
+    const { unmount } = renderHeader({ currentPath: "/saved/42/" });
+    expect(current().map((el) => el.textContent)).toEqual(["Saved"]);
+
+    unmount();
+    renderHeader({ currentPath: "/analysis/7" });
+    expect(current()).toHaveLength(0);
+  });
+
+  it("prefers the most specific link when two match", () => {
+    renderHeader({
+      currentPath: "/saved/archive",
+      navLinks: [
+        { label: "Saved", href: "/saved" },
+        { label: "Archive", href: "/saved/archive" },
+      ],
+    });
+    expect(current().map((el) => el.textContent)).toEqual(["Archive"]);
+  });
+
+  it("falls back to the browser location when currentPath is not passed", () => {
+    window.history.replaceState(null, "", "/saved?tab=all");
+    renderHeader();
+    expect(current().map((el) => el.textContent)).toEqual(["Saved"]);
+  });
+
+  it("follows back and forward navigation in the fallback", () => {
+    renderHeader();
+    expect(current().map((el) => el.textContent)).toEqual(["Home"]);
+    act(() => {
+      window.history.pushState(null, "", "/saved");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(current().map((el) => el.textContent)).toEqual(["Saved"]);
+  });
+
+  it("never marks a link to another site", () => {
+    renderHeader({
+      currentPath: "/docs",
+      navLinks: [{ label: "Docs", href: "https://example.com/docs" }],
+    });
+    expect(current()).toHaveLength(0);
+  });
+
+  it("marks the current page in the phone menu too", () => {
+    renderHeader({ currentPath: "/saved" });
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+    const marked = current();
+    expect(marked).toHaveLength(2);
+    const inPanel = marked.find((el) => el.closest(".dome-mobile-panel"));
+    expect(inPanel?.textContent).toBe("Saved");
+    expect(inPanel?.className).toContain("dome-mobile-link");
+    expect(inPanel?.className).toContain("is-current");
+  });
+
+  it("passes aria-current through a custom renderLink", () => {
+    const renderLink = vi.fn((props: Record<string, unknown>) => (
+      <a href={props.href as string} aria-current={props["aria-current"] as "page"}>
+        {props.children as string}
+      </a>
+    ));
+    renderHeader({ currentPath: "/saved", renderLink });
+    expect(current().map((el) => el.textContent)).toEqual(["Saved"]);
+  });
+});
+
+describe("ToolHeader, menus open on the page colour", () => {
+  it("keeps the bar solid with the phone menu open, the menu on its own surface", () => {
+    const { container } = renderHeader();
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+    const header = container.querySelector("header");
+    expect(header?.className).toContain("dome-bar");
+    const panel = container.querySelector(".dome-mobile-panel");
+    expect(panel).toBeTruthy();
+    expect(panel?.closest("header")).toBe(header);
+    expect(screen.getByRole("button", { name: /close menu/i })).toBeTruthy();
+  });
+
+  it("renders the account menu as a page-colour menu with an inverse avatar trigger", async () => {
+    signIn();
+    const { container } = renderHeader();
+    const avatar = await screen.findByLabelText(/account/i);
+    expect(avatar.className).toContain("dome-avatar");
+    fireEvent.click(avatar);
+    expect(avatar.getAttribute("aria-expanded")).toBe("true");
+    const menu = screen.getByRole("menu");
+    expect(menu.className).toContain("dome-menu");
+    expect(container.querySelector("header")?.className).toContain("dome-bar");
   });
 });
