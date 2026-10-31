@@ -39,8 +39,8 @@ npm audit --omit=dev --audit-level=high
 
 ## What is here
 
-- `src/components/`: `ToolHeader` (each tool's top bar: logo, tool name, nav, account menu with the "All tools"
-  hub link and sign-out), `ToolFooter`, `StagingBanner`, `ThemeToggle`, `DomeLogo`, `AuthGuard`, `AuthProvider`
+- `src/components/`: `ToolHeader` (each tool's top bar: logo, tool name, nav led by the "All tools" hub link, account menu with
+  sign-out), `ToolFooter`, `StagingBanner`, `ThemeToggle`, `DomeLogo`, `AuthGuard`, `AuthProvider`
   / `useAuth`, `Badge`, `Button`, `Card`.
 - `src/tokens.css`: the design tokens as CSS custom properties, both themes. `src/components.css`: shared CSS.
 - `src/auth.ts`, `src/utils.ts`: the `dome_auth_token` cookie on `.domelayer.com`, host-aware URLs (production
