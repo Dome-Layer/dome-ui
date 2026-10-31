@@ -620,6 +620,10 @@ function ToolHeader({
             toolName ? /* @__PURE__ */ jsx5("span", { className: "dome-toolname", children: toolName }) : null
           ] }),
           /* @__PURE__ */ jsxs3("nav", { className: "hidden md:flex items-center gap-4", children: [
+            isAuthenticated && showHubLink ? /* @__PURE__ */ jsxs3("a", { href: hubHref, className: "dome-navlink", children: [
+              /* @__PURE__ */ jsx5(LayoutGrid, { size: 15, strokeWidth: 1.75, "aria-hidden": "true" }),
+              hubLabel
+            ] }) : null,
             navItems.map((link, i) => /* @__PURE__ */ jsx5("span", { children: Link({
               href: link.href,
               className: clsx("dome-navlink", i === current && "is-current"),
@@ -652,10 +656,6 @@ function ToolHeader({
                 ),
                 /* @__PURE__ */ jsxs3("div", { className: "dome-menu", role: "menu", children: [
                   email ? /* @__PURE__ */ jsx5("p", { className: "dome-menu-email", title: email, children: email }) : null,
-                  showHubLink ? /* @__PURE__ */ jsxs3("a", { href: hubHref, role: "menuitem", className: "dome-menu-item", children: [
-                    /* @__PURE__ */ jsx5(LayoutGrid, { size: 15, strokeWidth: 1.75, "aria-hidden": "true" }),
-                    hubLabel
-                  ] }) : null,
                   /* @__PURE__ */ jsxs3(
                     "button",
                     {
@@ -704,13 +704,6 @@ function ToolHeader({
         }
       ),
       /* @__PURE__ */ jsxs3("div", { className: "dome-mobile-panel md:hidden", children: [
-        navItems.map((link, i) => /* @__PURE__ */ jsx5("span", { children: Link({
-          href: link.href,
-          className: clsx("dome-mobile-link", i === current && "is-current"),
-          "aria-current": i === current ? "page" : void 0,
-          onClick: () => setMenuOpen(false),
-          children: link.label
-        }) }, `${link.href}:${link.label}`)),
         isAuthenticated && showHubLink ? /* @__PURE__ */ jsxs3(
           "a",
           {
@@ -723,6 +716,13 @@ function ToolHeader({
             ]
           }
         ) : null,
+        navItems.map((link, i) => /* @__PURE__ */ jsx5("span", { children: Link({
+          href: link.href,
+          className: clsx("dome-mobile-link", i === current && "is-current"),
+          "aria-current": i === current ? "page" : void 0,
+          onClick: () => setMenuOpen(false),
+          children: link.label
+        }) }, `${link.href}:${link.label}`)),
         isAuthenticated ? /* @__PURE__ */ jsxs3(Fragment2, { children: [
           email ? /* @__PURE__ */ jsx5("p", { className: "dome-menu-email", title: email, children: email }) : null,
           /* @__PURE__ */ jsx5("button", { className: "btn btn-neutral", onClick: handleSignOut, children: "Sign out" })
