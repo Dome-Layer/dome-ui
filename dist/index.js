@@ -242,6 +242,8 @@ import { Sun, Moon } from "lucide-react";
 
 // src/theme.ts
 var COOKIE_NAME = "dome-theme";
+var STAGING_COOKIE_NAME = "dome-theme-staging";
+var STORAGE_KEY = "dome-theme";
 var COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 function isStagingHost(host) {
   return host === "staging.domelayer.com" || host.endsWith(".staging.domelayer.com");
@@ -250,21 +252,26 @@ function isProductionHost(host) {
   if (isStagingHost(host)) return false;
   return host === "domelayer.com" || host.endsWith(".domelayer.com");
 }
+function currentHost() {
+  return typeof window === "undefined" ? "" : window.location.hostname;
+}
 function isHttpsHost() {
-  if (typeof window === "undefined") return false;
-  const host = window.location.hostname;
+  const host = currentHost();
   return isStagingHost(host) || isProductionHost(host);
 }
 function cookieDomain() {
-  if (typeof window === "undefined") return "";
-  const host = window.location.hostname;
+  const host = currentHost();
   if (isStagingHost(host)) return ".staging.domelayer.com";
   if (isProductionHost(host)) return ".domelayer.com";
   return "";
 }
+function themeCookieName(host = currentHost()) {
+  return isStagingHost(host) ? STAGING_COOKIE_NAME : COOKIE_NAME;
+}
 function readThemeCookie() {
   if (typeof document === "undefined") return null;
-  const match = document.cookie.split("; ").find((r) => r.startsWith(`${COOKIE_NAME}=`));
+  const name = themeCookieName();
+  const match = document.cookie.split("; ").find((r) => r.startsWith(`${name}=`));
   if (!match) return null;
   const val = match.split("=")[1];
   return val === "light" || val === "dark" ? val : null;
@@ -274,34 +281,58 @@ function writeThemeCookie(theme) {
   const domain = cookieDomain();
   const domainPart = domain ? `; Domain=${domain}` : "";
   const secure = isHttpsHost() ? "; Secure" : "";
-  document.cookie = `${COOKIE_NAME}=${theme}; Path=/; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}${domainPart}${secure}`;
+  document.cookie = `${themeCookieName()}=${theme}; Path=/; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}${domainPart}${secure}`;
 }
 function getTheme() {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const cookie = readThemeCookie();
   if (cookie) return cookie;
-  const stored = localStorage.getItem(COOKIE_NAME);
-  if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+  } catch {
+  }
+  return "dark";
+}
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
 }
 function setTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem(COOKIE_NAME, theme);
+  applyTheme(theme);
+  try {
+    localStorage.setItem(STORAGE_KEY, theme);
+  } catch {
+  }
   writeThemeCookie(theme);
 }
 function toggleTheme() {
   const current = document.documentElement.getAttribute(
     "data-theme"
   );
-  const next = current === "dark" ? "light" : "dark";
+  const next = current === "light" ? "dark" : "light";
   setTheme(next);
   return next;
 }
+var THEME_INIT_SCRIPT = `(function () {
+  var theme = "dark";
+  try {
+    var host = window.location.hostname;
+    var name = host === "staging.domelayer.com" || host.slice(-22) === ".staging.domelayer.com" ? "${STAGING_COOKIE_NAME}" : "${COOKIE_NAME}";
+    var parts = document.cookie.split("; ");
+    var saved = null;
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].indexOf(name + "=") === 0) { saved = parts[i].slice(name.length + 1); break; }
+    }
+    if (saved !== "light" && saved !== "dark") saved = window.localStorage.getItem("${STORAGE_KEY}");
+    if (saved === "light") theme = "light";
+  } catch (e) {}
+  document.documentElement.setAttribute("data-theme", theme);
+})();`;
 
 // src/components/ThemeToggle.tsx
 import { jsx as jsx2 } from "react/jsx-runtime";
 function ThemeToggle() {
-  const [theme, setTheme2] = useState("light");
+  const [theme, setTheme2] = useState("dark");
   useEffect(() => {
     setTheme2(getTheme());
   }, []);

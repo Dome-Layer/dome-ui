@@ -21,8 +21,11 @@ export type { UserClaims } from "./auth";
 export {
   getTheme,
   setTheme,
+  applyTheme,
   toggleTheme,
   initTheme,
+  themeCookieName,
+  THEME_INIT_SCRIPT,
 } from "./theme";
 
 export type { Theme } from "./theme";

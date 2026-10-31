@@ -35,11 +35,22 @@ declare function getUserClaims(): UserClaims | null;
 declare function getUserEmail(): string | null;
 
 type Theme = "light" | "dark";
+/** The theme cookie's name on this host: `dome-theme-staging` on staging, `dome-theme` elsewhere. */
+declare function themeCookieName(host?: string): string;
 declare function getTheme(): Theme;
+/** Puts the theme on the page without remembering it. */
+declare function applyTheme(theme: Theme): void;
+/** An explicit choice: applies the theme and remembers it for every host of this environment. */
 declare function setTheme(theme: Theme): void;
 declare function toggleTheme(): Theme;
+/** Applies the remembered theme, or the dark default. Never writes: the default is not a choice. */
 declare function initTheme(): void;
+/**
+ * The same rule as getTheme, as a script for the tools to inline in `<head>` so the page paints in
+ * the right theme before React loads. Self-contained ES5, no regex.
+ */
+declare const THEME_INIT_SCRIPT = "(function () {\n  var theme = \"dark\";\n  try {\n    var host = window.location.hostname;\n    var name = host === \"staging.domelayer.com\" || host.slice(-22) === \".staging.domelayer.com\" ? \"dome-theme-staging\" : \"dome-theme\";\n    var parts = document.cookie.split(\"; \");\n    var saved = null;\n    for (var i = 0; i < parts.length; i++) {\n      if (parts[i].indexOf(name + \"=\") === 0) { saved = parts[i].slice(name.length + 1); break; }\n    }\n    if (saved !== \"light\" && saved !== \"dark\") saved = window.localStorage.getItem(\"dome-theme\");\n    if (saved === \"light\") theme = \"light\";\n  } catch (e) {}\n  document.documentElement.setAttribute(\"data-theme\", theme);\n})();";
 
 declare function clsx(...args: (string | undefined | null | false)[]): string;
 
-export { type Theme, type UserClaims, authHeaders, clearToken, clsx, cookieDomain, getAuthSiteUrl, getHubUrl, getTheme, getToken, getUserClaims, getUserEmail, initTheme, isAuthenticated, isHttpsHost, isProductionHost, isStagingHost, parseCookieExpiry, sanitizeRedirect, setTheme, setToken, toggleTheme };
+export { THEME_INIT_SCRIPT, type Theme, type UserClaims, applyTheme, authHeaders, clearToken, clsx, cookieDomain, getAuthSiteUrl, getHubUrl, getTheme, getToken, getUserClaims, getUserEmail, initTheme, isAuthenticated, isHttpsHost, isProductionHost, isStagingHost, parseCookieExpiry, sanitizeRedirect, setTheme, setToken, themeCookieName, toggleTheme };
