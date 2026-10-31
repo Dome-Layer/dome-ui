@@ -140,7 +140,22 @@ export const BarLight: Story = { args: barArgs, decorators: [page("light")] };
 
 export const BarDark: Story = { args: barArgs, decorators: [page("dark")] };
 
-/** Desktop, signed in, account menu open: the menu opens on the page colour, the bar stays solid. */
+/** Desktop, signed in: "All tools" (back to the hub, domelayer.com/app) leads the nav, then the tool's own links. */
+export const BarSignedInLight: Story = {
+  args: barArgs,
+  decorators: [page("light", "francesco@domelayer.com")],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByRole("link", { name: /all tools/i })).toBeVisible();
+  },
+};
+
+export const BarSignedInDark: Story = {
+  ...BarSignedInLight,
+  decorators: [page("dark", "francesco@domelayer.com")],
+};
+
+/** Desktop, signed in, account menu open: email and Sign out, on the page colour; the bar stays solid. */
 export const BarAccountMenuLight: Story = {
   args: barArgs,
   decorators: [page("light", "francesco@domelayer.com")],
@@ -169,7 +184,7 @@ export const BarPhoneDark: Story = {
   decorators: [page("dark")],
 };
 
-/** Phone menu open: the menu is the page-colour menu, the bar stays solid above it. */
+/** Phone menu open: the page-colour menu, "All tools" first; the bar stays solid above it. */
 export const BarPhoneMenuLight: Story = {
   args: barArgs,
   globals: phone,

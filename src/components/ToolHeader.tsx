@@ -43,7 +43,10 @@ interface ToolHeaderProps {
   extra?: ReactNode;
   /** "contained" = centered max-width; "fluid" = full-width, edge-aligned to page content. */
   width?: "contained" | "fluid";
-  /** Include the host-aware "All tools" hub link inside the account menu. Default true. */
+  /**
+   * Show the host-aware "All tools" link back to the signed-in hub (domelayer.com/app) when signed in:
+   * leftmost in the desktop nav and first in the phone menu. Default true.
+   */
   showHubLink?: boolean;
   /** Label for the hub link. Default "All tools". */
   hubLabel?: string;
@@ -193,8 +196,14 @@ export function ToolHeader({
           {toolName ? <span className="dome-toolname">{toolName}</span> : null}
         </div>
 
-        {/* Desktop nav */}
+        {/* Desktop nav: the way back to the hub first, then the tool's own pages */}
         <nav className="hidden md:flex items-center gap-4">
+          {isAuthenticated && showHubLink ? (
+            <a href={hubHref} className="dome-navlink">
+              <LayoutGrid size={15} strokeWidth={1.75} aria-hidden="true" />
+              {hubLabel}
+            </a>
+          ) : null}
           {navItems.map((link, i) => (
             <span key={`${link.href}:${link.label}`}>
               {Link({
@@ -232,12 +241,6 @@ export function ToolHeader({
                       <p className="dome-menu-email" title={email}>
                         {email}
                       </p>
-                    ) : null}
-                    {showHubLink ? (
-                      <a href={hubHref} role="menuitem" className="dome-menu-item">
-                        <LayoutGrid size={15} strokeWidth={1.75} aria-hidden="true" />
-                        {hubLabel}
-                      </a>
                     ) : null}
                     <button
                       type="button"
@@ -293,6 +296,16 @@ export function ToolHeader({
             onClick={() => setMenuOpen(false)}
           />
           <div className="dome-mobile-panel md:hidden">
+            {isAuthenticated && showHubLink ? (
+              <a
+                href={hubHref}
+                className="dome-mobile-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                <LayoutGrid size={16} strokeWidth={1.75} aria-hidden="true" />
+                {hubLabel}
+              </a>
+            ) : null}
             {navItems.map((link, i) => (
               <span key={`${link.href}:${link.label}`}>
                 {Link({
@@ -304,16 +317,6 @@ export function ToolHeader({
                 })}
               </span>
             ))}
-            {isAuthenticated && showHubLink ? (
-              <a
-                href={hubHref}
-                className="dome-mobile-link"
-                onClick={() => setMenuOpen(false)}
-              >
-                <LayoutGrid size={16} strokeWidth={1.75} aria-hidden="true" />
-                {hubLabel}
-              </a>
-            ) : null}
             {isAuthenticated ? (
               <>
                 {email ? (

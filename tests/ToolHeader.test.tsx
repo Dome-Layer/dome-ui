@@ -59,7 +59,7 @@ describe("ToolHeader, signed out", () => {
     expect(screen.getByRole("button", { name: /sign in/i })).toBeTruthy();
   });
 
-  it("does NOT surface All tools when signed out (it lives in the account menu)", () => {
+  it("does NOT surface All tools when signed out (the hub needs a sign-in)", () => {
     renderHeader();
     expect(screen.queryByText("All tools")).toBeNull();
   });
@@ -95,7 +95,7 @@ describe("ToolHeader, width", () => {
 });
 
 describe("ToolHeader, signed in", () => {
-  it("shows an account avatar; menu reveals email, All tools, and Sign out", async () => {
+  it("shows an account avatar; menu reveals email and Sign out", async () => {
     signIn();
     renderHeader();
 
@@ -105,25 +105,46 @@ describe("ToolHeader, signed in", () => {
 
     fireEvent.click(avatar);
     expect(screen.getByText("fp@domelayer.com")).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: /all tools/i })).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: /sign out/i })).toBeTruthy();
+    // All tools lives in the bar now, not in the account menu.
+    expect(screen.queryByRole("menuitem", { name: /all tools/i })).toBeNull();
   });
 
-  it("omits All tools from the account menu when showHubLink is false", async () => {
+  it("leads the desktop nav with All tools, linking to the hub", async () => {
+    signIn();
+    const { container } = renderHeader();
+    await screen.findByLabelText(/account/i);
+    const links = Array.from(container.querySelectorAll("nav a.dome-navlink"));
+    expect(links.map((a) => a.textContent)).toEqual(["All tools", "Home", "Saved"]);
+    expect(links[0].getAttribute("href")).toBe("https://domelayer.com/app");
+    // It leaves the tool, so it is never marked as the current page.
+    expect(links[0].getAttribute("aria-current")).toBeNull();
+  });
+
+  it("puts All tools first in the phone menu", async () => {
+    signIn();
+    const { container } = renderHeader();
+    await screen.findByLabelText(/account/i);
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+    const links = Array.from(container.querySelectorAll(".dome-mobile-panel a.dome-mobile-link"));
+    expect(links.map((a) => a.textContent)).toEqual(["All tools", "Home", "Saved"]);
+    expect(links[0].getAttribute("href")).toBe("https://domelayer.com/app");
+  });
+
+  it("omits All tools everywhere when showHubLink is false", async () => {
     signIn();
     renderHeader({ showHubLink: false });
     const avatar = await screen.findByLabelText(/account/i);
+    expect(screen.queryByRole("link", { name: /all tools/i })).toBeNull();
     fireEvent.click(avatar);
-    expect(screen.queryByRole("menuitem", { name: /all tools/i })).toBeNull();
+    expect(screen.queryByText(/all tools/i)).toBeNull();
     expect(screen.getByRole("menuitem", { name: /sign out/i })).toBeTruthy();
   });
 
-  it("renders a custom hub label in the account menu", async () => {
+  it("renders a custom hub label", async () => {
     signIn();
     renderHeader({ hubLabel: "Dome apps" });
-    const avatar = await screen.findByLabelText(/account/i);
-    fireEvent.click(avatar);
-    expect(screen.getByRole("menuitem", { name: /dome apps/i })).toBeTruthy();
+    expect(await screen.findByRole("link", { name: /dome apps/i })).toBeTruthy();
   });
 });
 

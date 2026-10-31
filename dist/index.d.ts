@@ -78,7 +78,10 @@ interface ToolHeaderProps {
     extra?: ReactNode;
     /** "contained" = centered max-width; "fluid" = full-width, edge-aligned to page content. */
     width?: "contained" | "fluid";
-    /** Include the host-aware "All tools" hub link inside the account menu. Default true. */
+    /**
+     * Show the host-aware "All tools" link back to the signed-in hub (domelayer.com/app) when signed in:
+     * leftmost in the desktop nav and first in the phone menu. Default true.
+     */
     showHubLink?: boolean;
     /** Label for the hub link. Default "All tools". */
     hubLabel?: string;
