@@ -25,12 +25,8 @@
   },
   "typesVersions": {
     "*": {
-      "utils": [
-        "./dist/utils.d.ts"
-      ],
-      "tailwind-preset": [
-        "./dist/tailwind-preset.d.ts"
-      ]
+      "utils": ["./dist/utils.d.ts"],
+      "tailwind-preset": ["./dist/tailwind-preset.d.ts"]
     }
   },
   "files": [
