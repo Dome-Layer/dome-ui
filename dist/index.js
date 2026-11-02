@@ -512,7 +512,10 @@ var en = {
   switchToDark: "Switch to dark mode",
   language: "Language",
   languageButton: (name) => `Language: ${name}`,
-  languageNote: "Applies to every DOME tool and to domelayer.com."
+  languageNote: "Applies to every DOME tool and to domelayer.com.",
+  footerBy: (toolName) => `${toolName} is a free tool by`,
+  footerTagline: ": governance-driven operational AI.",
+  footerExplore: "Explore Dome"
 };
 var UI_MESSAGES = {
   en,
@@ -529,7 +532,10 @@ var UI_MESSAGES = {
     switchToDark: "Passa al tema scuro",
     language: "Lingua",
     languageButton: (name) => `Lingua: ${name}`,
-    languageNote: "Vale per tutti gli strumenti DOME e per domelayer.com."
+    languageNote: "Vale per tutti gli strumenti DOME e per domelayer.com.",
+    footerBy: (toolName) => `${toolName} \xE8 uno strumento gratuito di`,
+    footerTagline: ": AI operativa guidata dalla governance.",
+    footerExplore: "Scopri Dome"
   },
   nl: {
     home: "Start",
@@ -544,7 +550,10 @@ var UI_MESSAGES = {
     switchToDark: "Overschakelen naar donker thema",
     language: "Taal",
     languageButton: (name) => `Taal: ${name}`,
-    languageNote: "Geldt voor alle DOME-tools en voor domelayer.com."
+    languageNote: "Geldt voor alle DOME-tools en voor domelayer.com.",
+    footerBy: (toolName) => `${toolName} is een gratis tool van`,
+    footerTagline: ": operationele AI, gestuurd door governance.",
+    footerExplore: "Ontdek Dome"
   },
   de: {
     home: "Start",
@@ -559,7 +568,10 @@ var UI_MESSAGES = {
     switchToDark: "Dunkles Design aktivieren",
     language: "Sprache",
     languageButton: (name) => `Sprache: ${name}`,
-    languageNote: "Gilt f\xFCr alle DOME-Tools und f\xFCr domelayer.com."
+    languageNote: "Gilt f\xFCr alle DOME-Tools und f\xFCr domelayer.com.",
+    footerBy: (toolName) => `${toolName} ist ein kostenloses Tool von`,
+    footerTagline: ": operative KI, gesteuert durch Governance.",
+    footerExplore: "Dome entdecken"
   }
 };
 
@@ -1030,7 +1042,9 @@ function ToolHeader({
 
 // src/components/ToolFooter.tsx
 import { jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
-function ToolFooter({ toolName, className }) {
+function ToolFooter({ toolName, className, languages = false }) {
+  const visitorLocale = useLocale();
+  const t = UI_MESSAGES[languages ? visitorLocale : DEFAULT_LOCALE];
   return /* @__PURE__ */ jsx7(
     "footer",
     {
@@ -1056,8 +1070,7 @@ function ToolFooter({ toolName, className }) {
           },
           children: [
             /* @__PURE__ */ jsxs5("p", { style: { color: "var(--color-text-secondary)", margin: 0 }, children: [
-              toolName,
-              " is a free tool by",
+              t.footerBy(toolName),
               " ",
               /* @__PURE__ */ jsx7(
                 "a",
@@ -1073,8 +1086,7 @@ function ToolFooter({ toolName, className }) {
                   children: "Dome"
                 }
               ),
-              " ",
-              "\u2014 Governance-Driven Operational AI."
+              t.footerTagline
             ] }),
             /* @__PURE__ */ jsxs5(
               "a",
@@ -1092,7 +1104,7 @@ function ToolFooter({ toolName, className }) {
                   whiteSpace: "nowrap"
                 },
                 children: [
-                  "Explore Dome",
+                  t.footerExplore,
                   /* @__PURE__ */ jsx7(
                     "svg",
                     {

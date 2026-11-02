@@ -16,3 +16,6 @@ export const ProcessAnalyzer: Story = { args: { toolName: "Process Analyzer" } }
 export const LLMCouncil: Story = { args: { toolName: "LLM Council" } };
 export const DocumentIntelligence: Story = { args: { toolName: "Document Intelligence" } };
 export const DataIntelligence: Story = { args: { toolName: "Data Intelligence" } };
+
+/** The visitor's language (`languages` on). Pick a language with `dome-lang` or the browser setting. */
+export const WithLanguages: Story = { args: { toolName: "Process Analyzer", languages: true } };

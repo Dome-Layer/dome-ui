@@ -11,7 +11,9 @@ import { describe, expect, it } from 'vitest'
 const ROOT = join(__dirname, '..')
 const SKIP = new Set(['node_modules', 'out', 'coverage', 'storybook-static'])
 const TEXT = /(\.(ts|tsx|js|mjs|cjs|css|json|jsonc)|^\.env\..*example)$/
-const DASH = /[\u2013\u2014]/
+// The characters themselves, and the HTML entities that render as them (one slipped through as
+// the named entity in ToolFooter until 2026-11-02).
+const DASH = /[\u2013\u2014]|&(mdash|ndash|#821[12]|#x201[34]);/i
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
