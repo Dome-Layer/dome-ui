@@ -53,4 +53,39 @@ declare const THEME_INIT_SCRIPT = "(function () {\n  var theme = \"dark\";\n  tr
 
 declare function clsx(...args: (string | undefined | null | false)[]): string;
 
-export { THEME_INIT_SCRIPT, type Theme, type UserClaims, applyTheme, authHeaders, clearToken, clsx, cookieDomain, getAuthSiteUrl, getHubUrl, getTheme, getToken, getUserClaims, getUserEmail, initTheme, isAuthenticated, isHttpsHost, isProductionHost, isStagingHost, parseCookieExpiry, sanitizeRedirect, setTheme, setToken, themeCookieName, toggleTheme };
+/** The site's four languages, which the tools follow (DOME_DECISIONS 2026-11-02, roadmap row 6). */
+declare const LOCALES: readonly ["en", "it", "nl", "de"];
+type Locale = (typeof LOCALES)[number];
+declare const DEFAULT_LOCALE: Locale;
+/** Each language named in itself, as the language menu lists them. */
+declare const LOCALE_NAMES: Record<Locale, string>;
+/** The locale `Intl` formats dates, numbers and amounts with (the same tags as the site's Content-Language). */
+declare const INTL_LOCALES: Record<Locale, string>;
+/** Fired on `window` after setLocale, so every useLocale hook on the page re-renders. */
+declare const LOCALE_CHANGE_EVENT = "dome-locale-change";
+declare function isLocale(value: unknown): value is Locale;
+/** `de-AT` to `de`, `it` to `it`; undefined when the language is not one of ours. */
+declare function matchLocale(tag: string | null | undefined): Locale | undefined;
+/** The language cookie's name on this host: `dome-lang-staging` on staging, `dome-lang` elsewhere. */
+declare function localeCookieName(host?: string): string;
+declare function getLocale(): Locale;
+/** Puts the language on the page (`<html lang>`) without remembering it. */
+declare function applyLocale(locale: Locale): void;
+/** An explicit choice: applies it, remembers it for every host of this environment, and tells the page. */
+declare function setLocale(locale: Locale): void;
+/** Applies the remembered or browser language. Never writes: a default is not a choice. */
+declare function initLocale(): void;
+/** Calls onChange after every setLocale on this page; returns the unsubscribe function. */
+declare function onLocaleChange(onChange: () => void): () => void;
+/**
+ * A tool's own strings, one object per language. English is the source type, so a key missing from
+ * another language fails the type check, as on the site.
+ */
+type Catalogue<T> = Record<Locale, T>;
+/**
+ * The same rule as getLocale, as a script for the tools to inline in `<head>` next to
+ * THEME_INIT_SCRIPT, so `<html lang>` is right before React loads. Self-contained ES5, no regex.
+ */
+declare const LOCALE_INIT_SCRIPT: string;
+
+export { type Catalogue, DEFAULT_LOCALE, INTL_LOCALES, LOCALES, LOCALE_CHANGE_EVENT, LOCALE_INIT_SCRIPT, LOCALE_NAMES, type Locale, THEME_INIT_SCRIPT, type Theme, type UserClaims, applyLocale, applyTheme, authHeaders, clearToken, clsx, cookieDomain, getAuthSiteUrl, getHubUrl, getLocale, getTheme, getToken, getUserClaims, getUserEmail, initLocale, initTheme, isAuthenticated, isHttpsHost, isLocale, isProductionHost, isStagingHost, localeCookieName, matchLocale, onLocaleChange, parseCookieExpiry, sanitizeRedirect, setLocale, setTheme, setToken, themeCookieName, toggleTheme };

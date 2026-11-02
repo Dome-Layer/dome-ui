@@ -7,9 +7,13 @@ import {
 import { LayoutGrid, Menu, X, LogOut } from "lucide-react";
 import { DomeLogo } from "./DomeLogo";
 import { ThemeToggle } from "./ThemeToggle";
+import { LanguageMenu } from "./LanguageMenu";
 import { useAuth } from "./AuthContext";
 import { getAuthSiteUrl, getHubUrl } from "../auth";
 import { clsx } from "../clsx";
+import { DEFAULT_LOCALE } from "../locale";
+import { useLocale } from "../useLocale";
+import { UI_MESSAGES } from "../messages";
 
 interface NavLink {
   label: string;
@@ -33,7 +37,7 @@ interface ToolHeaderProps {
   homeHref?: string;
   /** Show the "Home" nav link (paired with navLinks). Default true. Multi-page tools with a sidebar (DocI) set this false. */
   showHomeLink?: boolean;
-  /** Label for the home link. Default "Home". */
+  /** Label for the home link. Default "Home", in the visitor's language when `languages` is on. */
   homeLabel?: string;
   /** Tool-specific links (e.g. Saved), shown next to Home. */
   navLinks?: NavLink[];
@@ -48,8 +52,14 @@ interface ToolHeaderProps {
    * leftmost in the desktop nav and first in the phone menu. Default true.
    */
   showHubLink?: boolean;
-  /** Label for the hub link. Default "All tools". */
+  /** Label for the hub link. Default "All tools", in the visitor's language when `languages` is on. */
   hubLabel?: string;
+  /**
+   * Turns the tool's languages on (roadmap row 6): the bar speaks the visitor's language (EN, IT, NL,
+   * DE) and shows the language menu. Default false, so a tool that bumps dome-ui before its own
+   * strings are translated stays English throughout rather than half translated.
+   */
+  languages?: boolean;
   /** Custom sign-in handler (e.g. open a modal). Defaults to redirecting to the auth site. */
   onSignIn?: () => void;
   /**
@@ -135,18 +145,24 @@ export function ToolHeader({
   toolName,
   homeHref = "/",
   showHomeLink = true,
-  homeLabel = "Home",
+  homeLabel,
   navLinks = [],
   renderLink,
   extra,
   width = "contained",
   showHubLink = true,
-  hubLabel = "All tools",
+  hubLabel,
   onSignIn,
   currentPath,
+  languages = false,
 }: ToolHeaderProps) {
   const { isAuthenticated, user, signOut } = useAuth();
   const Link = renderLink ?? DefaultLink;
+  const visitorLocale = useLocale();
+  const locale = languages ? visitorLocale : DEFAULT_LOCALE;
+  const t = UI_MESSAGES[locale];
+  const homeText = homeLabel ?? t.home;
+  const hubText = hubLabel ?? t.hub;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -157,7 +173,7 @@ export function ToolHeader({
 
   // In-tool navigation, left to right: Home (optional) then tool-specific links (Saved...).
   const navItems = [
-    ...(showHomeLink ? [{ label: homeLabel, href: homeHref, exact: true }] : []),
+    ...(showHomeLink ? [{ label: homeText, href: homeHref, exact: true }] : []),
     ...navLinks.map((link) => ({ ...link, exact: false })),
   ];
   const browserPath = useBrowserPath();
@@ -189,7 +205,7 @@ export function ToolHeader({
         <div className="flex items-center min-w-0">
           {Link({
             href: homeHref,
-            "aria-label": "Home",
+            "aria-label": t.home,
             className: "dome-brand",
             children: <DomeLogo size="md" variant="white" />,
           })}
@@ -201,7 +217,7 @@ export function ToolHeader({
           {isAuthenticated && showHubLink ? (
             <a href={hubHref} className="dome-navlink">
               <LayoutGrid size={15} strokeWidth={1.75} aria-hidden="true" />
-              {hubLabel}
+              {hubText}
             </a>
           ) : null}
           {navItems.map((link, i) => (
@@ -220,7 +236,7 @@ export function ToolHeader({
               <button
                 type="button"
                 className="dome-avatar"
-                aria-label={email ? `Account: ${email}` : "Account"}
+                aria-label={email ? t.accountOf(email) : t.account}
                 aria-haspopup="menu"
                 aria-expanded={accountOpen}
                 onClick={() => setAccountOpen((v) => !v)}
@@ -249,7 +265,7 @@ export function ToolHeader({
                       onClick={handleSignOut}
                     >
                       <LogOut size={15} strokeWidth={1.75} aria-hidden="true" />
-                      Sign out
+                      {t.signOut}
                     </button>
                   </div>
                 </>
@@ -257,22 +273,24 @@ export function ToolHeader({
             </div>
           ) : (
             <button type="button" className="btn btn-inverse" onClick={handleSignIn}>
-              Sign in
+              {t.signIn}
             </button>
           )}
 
           {extra}
 
-          <ThemeToggle />
+          {languages ? <LanguageMenu /> : null}
+
+          <ThemeToggle locale={locale} />
         </nav>
 
         {/* Mobile cluster: theme toggle stays inline, the rest collapses */}
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle />
+          <ThemeToggle locale={locale} />
           <button
             type="button"
             className="dome-menu-btn"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-label={menuOpen ? t.closeMenu : t.openMenu}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
           >
@@ -303,7 +321,7 @@ export function ToolHeader({
                 onClick={() => setMenuOpen(false)}
               >
                 <LayoutGrid size={16} strokeWidth={1.75} aria-hidden="true" />
-                {hubLabel}
+                {hubText}
               </a>
             ) : null}
             {navItems.map((link, i) => (
@@ -317,6 +335,9 @@ export function ToolHeader({
                 })}
               </span>
             ))}
+            {languages ? (
+              <LanguageMenu variant="panel" onChoose={() => setMenuOpen(false)} />
+            ) : null}
             {isAuthenticated ? (
               <>
                 {email ? (
@@ -325,7 +346,7 @@ export function ToolHeader({
                   </p>
                 ) : null}
                 <button className="btn btn-neutral" onClick={handleSignOut}>
-                  Sign out
+                  {t.signOut}
                 </button>
               </>
             ) : (
@@ -336,7 +357,7 @@ export function ToolHeader({
                   handleSignIn();
                 }}
               >
-                Sign in
+                {t.signIn}
               </button>
             )}
           </div>

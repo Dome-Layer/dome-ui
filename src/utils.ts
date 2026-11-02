@@ -31,3 +31,22 @@ export {
 export type { Theme } from "./theme";
 
 export { clsx } from "./clsx";
+
+export {
+  LOCALES,
+  DEFAULT_LOCALE,
+  LOCALE_NAMES,
+  INTL_LOCALES,
+  LOCALE_CHANGE_EVENT,
+  LOCALE_INIT_SCRIPT,
+  isLocale,
+  matchLocale,
+  localeCookieName,
+  getLocale,
+  setLocale,
+  applyLocale,
+  initLocale,
+  onLocaleChange,
+} from "./locale";
+
+export type { Locale, Catalogue } from "./locale";

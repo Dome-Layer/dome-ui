@@ -67,13 +67,13 @@ function sanitizeRedirect(raw) {
     return raw;
   }
   if (typeof window === "undefined") return "/";
-  const currentHost2 = window.location.hostname;
+  const currentHost3 = window.location.hostname;
   try {
     const url = new URL(raw);
     if (url.protocol !== "https:" && url.protocol !== "http:") return "/";
     const host = url.hostname;
-    if (isStagingHost(currentHost2) && isStagingHost(host)) return raw;
-    if (isProductionHost(currentHost2) && isProductionHost(host)) return raw;
+    if (isStagingHost(currentHost3) && isStagingHost(host)) return raw;
+    if (isProductionHost(currentHost3) && isProductionHost(host)) return raw;
   } catch {
   }
   return "/";
@@ -200,8 +200,115 @@ var THEME_INIT_SCRIPT = `(function () {
 function clsx(...args) {
   return args.filter(Boolean).join(" ");
 }
+
+// src/locale.ts
+var LOCALES = ["en", "it", "nl", "de"];
+var DEFAULT_LOCALE = "en";
+var LOCALE_NAMES = {
+  en: "English",
+  it: "Italiano",
+  nl: "Nederlands",
+  de: "Deutsch"
+};
+var INTL_LOCALES = {
+  en: "en-GB",
+  it: "it-IT",
+  nl: "nl-NL",
+  de: "de-DE"
+};
+var COOKIE_NAME3 = "dome-lang";
+var STAGING_COOKIE_NAME2 = "dome-lang-staging";
+var COOKIE_MAX_AGE2 = 60 * 60 * 24 * 365;
+var LOCALE_CHANGE_EVENT = "dome-locale-change";
+function currentHost2() {
+  return typeof window === "undefined" ? "" : window.location.hostname;
+}
+function isLocale(value) {
+  return typeof value === "string" && LOCALES.includes(value);
+}
+function matchLocale(tag) {
+  if (!tag) return void 0;
+  const base = tag.trim().toLowerCase().split(/[-_]/)[0];
+  return isLocale(base) ? base : void 0;
+}
+function localeCookieName(host = currentHost2()) {
+  return isStagingHost(host) ? STAGING_COOKIE_NAME2 : COOKIE_NAME3;
+}
+function readLocaleCookie() {
+  if (typeof document === "undefined") return void 0;
+  const name = localeCookieName();
+  const match = document.cookie.split("; ").find((r) => r.startsWith(`${name}=`));
+  return match ? matchLocale(match.slice(name.length + 1)) : void 0;
+}
+function writeLocaleCookie(locale) {
+  if (typeof document === "undefined") return;
+  const domain = cookieDomain();
+  const domainPart = domain ? `; Domain=${domain}` : "";
+  const secure = isHttpsHost() ? "; Secure" : "";
+  document.cookie = `${localeCookieName()}=${locale}; Path=/; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE2}${domainPart}${secure}`;
+}
+function browserLocale() {
+  if (typeof navigator === "undefined") return void 0;
+  const tags = navigator.languages?.length ? navigator.languages : [navigator.language];
+  for (const tag of tags) {
+    const locale = matchLocale(tag);
+    if (locale) return locale;
+  }
+  return void 0;
+}
+function getLocale() {
+  if (typeof window === "undefined") return DEFAULT_LOCALE;
+  return readLocaleCookie() ?? browserLocale() ?? DEFAULT_LOCALE;
+}
+function applyLocale(locale) {
+  document.documentElement.lang = locale;
+}
+function setLocale(locale) {
+  applyLocale(locale);
+  writeLocaleCookie(locale);
+  window.dispatchEvent(new Event(LOCALE_CHANGE_EVENT));
+}
+function initLocale() {
+  applyLocale(getLocale());
+}
+function onLocaleChange(onChange) {
+  window.addEventListener(LOCALE_CHANGE_EVENT, onChange);
+  return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onChange);
+}
+var LOCALE_INIT_SCRIPT = `(function () {
+  var supported = ${JSON.stringify(LOCALES)};
+  function match(tag) {
+    if (!tag) return null;
+    var base = String(tag).toLowerCase().split("-")[0].split("_")[0];
+    for (var i = 0; i < supported.length; i++) { if (supported[i] === base) return base; }
+    return null;
+  }
+  var locale = "${DEFAULT_LOCALE}";
+  try {
+    var host = window.location.hostname;
+    var name = host === "staging.domelayer.com" || host.slice(-22) === ".staging.domelayer.com" ? "${STAGING_COOKIE_NAME2}" : "${COOKIE_NAME3}";
+    var parts = document.cookie.split("; ");
+    var saved = null;
+    for (var j = 0; j < parts.length; j++) {
+      if (parts[j].indexOf(name + "=") === 0) { saved = match(parts[j].slice(name.length + 1)); break; }
+    }
+    if (!saved) {
+      var tags = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+      for (var k = 0; k < tags.length && !saved; k++) saved = match(tags[k]);
+    }
+    if (saved) locale = saved;
+  } catch (e) {}
+  document.documentElement.lang = locale;
+})();`;
 export {
+  DEFAULT_LOCALE,
+  INTL_LOCALES,
+  LOCALES,
+  LOCALE_CHANGE_EVENT,
+  LOCALE_INIT_SCRIPT,
+  LOCALE_NAMES,
   THEME_INIT_SCRIPT,
+  applyLocale,
   applyTheme,
   authHeaders,
   clearToken,
@@ -209,17 +316,24 @@ export {
   cookieDomain,
   getAuthSiteUrl,
   getHubUrl,
+  getLocale,
   getTheme,
   getToken,
   getUserClaims,
   getUserEmail,
+  initLocale,
   initTheme,
   isAuthenticated,
   isHttpsHost,
+  isLocale,
   isProductionHost,
   isStagingHost,
+  localeCookieName,
+  matchLocale,
+  onLocaleChange,
   parseCookieExpiry,
   sanitizeRedirect,
+  setLocale,
   setTheme,
   setToken,
   themeCookieName,
