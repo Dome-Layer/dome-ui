@@ -23,7 +23,64 @@ declare function DomeFavicon({ className, size, }: {
     size?: number;
 }): react.JSX.Element;
 
-declare function ThemeToggle(): react.JSX.Element;
+/** The site's four languages, which the tools follow (DOME_DECISIONS 2026-11-02, roadmap row 6). */
+declare const LOCALES: readonly ["en", "it", "nl", "de"];
+type Locale = (typeof LOCALES)[number];
+/**
+ * A tool's own strings, one object per language. English is the source type, so a key missing from
+ * another language fails the type check, as on the site.
+ */
+type Catalogue<T> = Record<Locale, T>;
+
+interface ThemeToggleProps {
+    /** Language of the accessible label. English unless the tool has turned languages on. */
+    locale?: Locale;
+}
+declare function ThemeToggle({ locale }?: ThemeToggleProps): react.JSX.Element;
+
+interface LanguageMenuProps {
+    /** "bar": the button in the desktop tool bar with a menu below it. "panel": the list inside the phone menu. */
+    variant?: "bar" | "panel";
+    /** Called after a language is chosen (the phone menu closes itself with it). */
+    onChoose?: () => void;
+}
+/**
+ * The tools' language switch (row 6 canvas, signed off 2026-11-02). Every language is named in
+ * itself and carries its own `lang`; the current one is marked with a tick and `aria-current`.
+ * A choice is remembered for the site and every tool (`setLocale`), which the note under the list says.
+ */
+declare function LanguageMenu({ variant, onChoose }: LanguageMenuProps): react.JSX.Element;
+
+/**
+ * The current language, re-rendering on setLocale. English while rendering on the server and during
+ * hydration (a static export is prerendered in English), so the first client render matches the HTML.
+ */
+declare function useLocale(): Locale;
+/** The current language's entry of a catalogue. */
+declare function useMessages<T>(catalogue: Catalogue<T>): T;
+
+/**
+ * The shared parts' own words: the tool bar, its menus and the theme switch. Worded as on
+ * domelayer.com (its `nav` catalogue), so the site, the hub and the tools say the same thing.
+ * English is the source type.
+ */
+declare const en: {
+    home: string;
+    hub: string;
+    signIn: string;
+    signOut: string;
+    account: string;
+    accountOf: (email: string) => string;
+    openMenu: string;
+    closeMenu: string;
+    switchToLight: string;
+    switchToDark: string;
+    language: string;
+    languageButton: (name: string) => string;
+    languageNote: string;
+};
+type UiMessages = typeof en;
+declare const UI_MESSAGES: Catalogue<UiMessages>;
 
 interface AuthGuardProps {
     children: React.ReactNode;
@@ -68,7 +125,7 @@ interface ToolHeaderProps {
     homeHref?: string;
     /** Show the "Home" nav link (paired with navLinks). Default true. Multi-page tools with a sidebar (DocI) set this false. */
     showHomeLink?: boolean;
-    /** Label for the home link. Default "Home". */
+    /** Label for the home link. Default "Home", in the visitor's language when `languages` is on. */
     homeLabel?: string;
     /** Tool-specific links (e.g. Saved), shown next to Home. */
     navLinks?: NavLink[];
@@ -83,8 +140,14 @@ interface ToolHeaderProps {
      * leftmost in the desktop nav and first in the phone menu. Default true.
      */
     showHubLink?: boolean;
-    /** Label for the hub link. Default "All tools". */
+    /** Label for the hub link. Default "All tools", in the visitor's language when `languages` is on. */
     hubLabel?: string;
+    /**
+     * Turns the tool's languages on (roadmap row 6): the bar speaks the visitor's language (EN, IT, NL,
+     * DE) and shows the language menu. Default false, so a tool that bumps dome-ui before its own
+     * strings are translated stays English throughout rather than half translated.
+     */
+    languages?: boolean;
     /** Custom sign-in handler (e.g. open a modal). Defaults to redirecting to the auth site. */
     onSignIn?: () => void;
     /**
@@ -93,7 +156,7 @@ interface ToolHeaderProps {
      */
     currentPath?: string;
 }
-declare function ToolHeader({ toolName, homeHref, showHomeLink, homeLabel, navLinks, renderLink, extra, width, showHubLink, hubLabel, onSignIn, currentPath, }: ToolHeaderProps): react.JSX.Element;
+declare function ToolHeader({ toolName, homeHref, showHomeLink, homeLabel, navLinks, renderLink, extra, width, showHubLink, hubLabel, onSignIn, currentPath, languages, }: ToolHeaderProps): react.JSX.Element;
 
 interface ToolFooterProps {
     toolName: string;
@@ -145,4 +208,4 @@ declare function StagingBanner({ environment, className }: StagingBannerProps): 
 
 declare function clsx(...args: (string | undefined | null | false)[]): string;
 
-export { AuthGuard, AuthProvider, Badge, Button, Card, DomeFavicon, DomeLogo, DomeLogoLarge, DomeSymbol, StagingBanner, ThemeToggle, ToolFooter, ToolHeader, clsx, useAuth };
+export { AuthGuard, AuthProvider, Badge, Button, Card, type Catalogue, DomeFavicon, DomeLogo, DomeLogoLarge, DomeSymbol, LanguageMenu, type Locale, StagingBanner, ThemeToggle, ToolFooter, ToolHeader, UI_MESSAGES, type UiMessages, clsx, useAuth, useLocale, useMessages };

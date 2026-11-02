@@ -218,3 +218,46 @@ export const BarWithStagingBannerDark: Story = {
   args: barArgs,
   decorators: [withStagingBanner, page("dark")],
 };
+
+/** Remembers a language for the story, as the site or a tool's language menu would. */
+function lang(code: "en" | "it" | "nl" | "de"): Decorator {
+  return (Story) => {
+    document.cookie = `dome-lang=${code}; Path=/`;
+    return <Story />;
+  };
+}
+
+const languageArgs = { ...barArgs, languages: true };
+
+/** Languages on (row 6), German, language menu open: each language named in itself, the current one ticked. */
+export const BarLanguageMenuLight: Story = {
+  args: languageArgs,
+  decorators: [page("light"), lang("de")],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByLabelText(/^sprache/i));
+    await expect(canvas.getByRole("button", { name: "Deutsch" })).toBeVisible();
+  },
+};
+
+export const BarLanguageMenuDark: Story = {
+  ...BarLanguageMenuLight,
+  decorators: [page("dark"), lang("de")],
+};
+
+/** Phone menu in Italian: the languages as a group under the links, 48px targets. */
+export const BarPhoneLanguagesLight: Story = {
+  args: languageArgs,
+  globals: phone,
+  decorators: [page("light"), lang("it")],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: /apri il menu/i }));
+    await expect(canvas.getByRole("group", { name: "Lingua" })).toBeVisible();
+  },
+};
+
+export const BarPhoneLanguagesDark: Story = {
+  ...BarPhoneLanguagesLight,
+  decorators: [page("dark"), lang("it")],
+};

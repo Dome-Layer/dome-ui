@@ -282,3 +282,65 @@ describe("ToolHeader, menus open on the page colour", () => {
     expect(container.querySelector("header")?.className).toContain("dome-bar");
   });
 });
+
+describe("ToolHeader, languages (row 6)", () => {
+  beforeEach(() => {
+    document.cookie = "dome-lang=; Max-Age=0; Path=/";
+  });
+
+  it("stays English with no language menu unless the tool turns languages on", () => {
+    document.cookie = "dome-lang=it; Path=/";
+    renderHeader();
+    expect(screen.getByText("Home")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^(language|lingua)/i })).toBeNull();
+  });
+
+  it("speaks the remembered language when languages is on", async () => {
+    document.cookie = "dome-lang=it; Path=/";
+    signIn();
+    renderHeader({ languages: true });
+    expect(await screen.findByText("Tutti gli strumenti")).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Lingua: Italiano" }).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText(/^account/i)).toBeTruthy();
+  });
+
+  it("keeps a label the tool passes, in any language", () => {
+    document.cookie = "dome-lang=de; Path=/";
+    renderHeader({ languages: true, homeLabel: "Analyzer" });
+    expect(screen.getByText("Analyzer")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Anmelden" })).toBeTruthy();
+  });
+
+  it("lists every language in itself, marks the current one, and switches the bar on a choice", () => {
+    document.cookie = "dome-lang=en; Path=/";
+    renderHeader({ languages: true });
+    fireEvent.click(screen.getByRole("button", { name: "Language: English" }));
+    const deutsch = screen.getByRole("button", { name: "Deutsch" });
+    expect(deutsch.getAttribute("lang")).toBe("de");
+    expect(screen.getByRole("button", { name: "English" }).getAttribute("aria-current")).toBe("true");
+    expect(screen.getByText("Applies to every DOME tool and to domelayer.com.")).toBeTruthy();
+
+    act(() => {
+      fireEvent.click(deutsch);
+    });
+    expect(document.cookie).toContain("dome-lang=de");
+    expect(document.documentElement.lang).toBe("de");
+    expect(screen.getByText("Start")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Anmelden" })).toBeTruthy();
+    expect(screen.queryByText("Applies to every DOME tool and to domelayer.com.")).toBeNull();
+  });
+
+  it("offers the languages in the phone menu and closes it after a choice", () => {
+    document.cookie = "dome-lang=en; Path=/";
+    renderHeader({ languages: true });
+    fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+    const group = screen.getByRole("group", { name: "Language" });
+    expect(group).toBeTruthy();
+    act(() => {
+      fireEvent.click(screen.getAllByRole("button", { name: "Nederlands" })[0]);
+    });
+    expect(screen.queryByRole("group")).toBeNull();
+    expect(screen.getByRole("button", { name: "Menu openen" })).toBeTruthy();
+  });
+});

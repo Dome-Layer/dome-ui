@@ -329,31 +329,6 @@ var THEME_INIT_SCRIPT = `(function () {
   document.documentElement.setAttribute("data-theme", theme);
 })();`;
 
-// src/components/ThemeToggle.tsx
-import { jsx as jsx2 } from "react/jsx-runtime";
-function ThemeToggle() {
-  const [theme, setTheme2] = useState("dark");
-  useEffect(() => {
-    setTheme2(getTheme());
-  }, []);
-  const handleToggle = () => {
-    const next = toggleTheme();
-    setTheme2(next);
-  };
-  return /* @__PURE__ */ jsx2(
-    "button",
-    {
-      onClick: handleToggle,
-      className: "theme-toggle",
-      "aria-label": `Switch to ${theme === "dark" ? "light" : "dark"} theme`,
-      children: theme === "dark" ? /* @__PURE__ */ jsx2(Sun, { size: 16, strokeWidth: 1.5 }) : /* @__PURE__ */ jsx2(Moon, { size: 16, strokeWidth: 1.5 })
-    }
-  );
-}
-
-// src/components/AuthGuard.tsx
-import { useEffect as useEffect2, useState as useState2 } from "react";
-
 // src/auth.ts
 var COOKIE_NAME2 = "dome_auth_token";
 function isStagingHost2(host) {
@@ -432,11 +407,290 @@ function getUserClaims() {
   }
 }
 
-// src/components/AuthGuard.tsx
+// src/locale.ts
+var LOCALES = ["en", "it", "nl", "de"];
+var DEFAULT_LOCALE = "en";
+var LOCALE_NAMES = {
+  en: "English",
+  it: "Italiano",
+  nl: "Nederlands",
+  de: "Deutsch"
+};
+var COOKIE_NAME3 = "dome-lang";
+var STAGING_COOKIE_NAME2 = "dome-lang-staging";
+var COOKIE_MAX_AGE2 = 60 * 60 * 24 * 365;
+var LOCALE_CHANGE_EVENT = "dome-locale-change";
+function currentHost2() {
+  return typeof window === "undefined" ? "" : window.location.hostname;
+}
+function isLocale(value) {
+  return typeof value === "string" && LOCALES.includes(value);
+}
+function matchLocale(tag) {
+  if (!tag) return void 0;
+  const base = tag.trim().toLowerCase().split(/[-_]/)[0];
+  return isLocale(base) ? base : void 0;
+}
+function localeCookieName(host = currentHost2()) {
+  return isStagingHost2(host) ? STAGING_COOKIE_NAME2 : COOKIE_NAME3;
+}
+function readLocaleCookie() {
+  if (typeof document === "undefined") return void 0;
+  const name = localeCookieName();
+  const match = document.cookie.split("; ").find((r) => r.startsWith(`${name}=`));
+  return match ? matchLocale(match.slice(name.length + 1)) : void 0;
+}
+function writeLocaleCookie(locale) {
+  if (typeof document === "undefined") return;
+  const domain = cookieDomain2();
+  const domainPart = domain ? `; Domain=${domain}` : "";
+  const secure = isHttpsHost2() ? "; Secure" : "";
+  document.cookie = `${localeCookieName()}=${locale}; Path=/; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE2}${domainPart}${secure}`;
+}
+function browserLocale() {
+  if (typeof navigator === "undefined") return void 0;
+  const tags = navigator.languages?.length ? navigator.languages : [navigator.language];
+  for (const tag of tags) {
+    const locale = matchLocale(tag);
+    if (locale) return locale;
+  }
+  return void 0;
+}
+function getLocale() {
+  if (typeof window === "undefined") return DEFAULT_LOCALE;
+  return readLocaleCookie() ?? browserLocale() ?? DEFAULT_LOCALE;
+}
+function applyLocale(locale) {
+  document.documentElement.lang = locale;
+}
+function setLocale(locale) {
+  applyLocale(locale);
+  writeLocaleCookie(locale);
+  window.dispatchEvent(new Event(LOCALE_CHANGE_EVENT));
+}
+function onLocaleChange(onChange) {
+  window.addEventListener(LOCALE_CHANGE_EVENT, onChange);
+  return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onChange);
+}
+var LOCALE_INIT_SCRIPT = `(function () {
+  var supported = ${JSON.stringify(LOCALES)};
+  function match(tag) {
+    if (!tag) return null;
+    var base = String(tag).toLowerCase().split("-")[0].split("_")[0];
+    for (var i = 0; i < supported.length; i++) { if (supported[i] === base) return base; }
+    return null;
+  }
+  var locale = "${DEFAULT_LOCALE}";
+  try {
+    var host = window.location.hostname;
+    var name = host === "staging.domelayer.com" || host.slice(-22) === ".staging.domelayer.com" ? "${STAGING_COOKIE_NAME2}" : "${COOKIE_NAME3}";
+    var parts = document.cookie.split("; ");
+    var saved = null;
+    for (var j = 0; j < parts.length; j++) {
+      if (parts[j].indexOf(name + "=") === 0) { saved = match(parts[j].slice(name.length + 1)); break; }
+    }
+    if (!saved) {
+      var tags = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+      for (var k = 0; k < tags.length && !saved; k++) saved = match(tags[k]);
+    }
+    if (saved) locale = saved;
+  } catch (e) {}
+  document.documentElement.lang = locale;
+})();`;
+
+// src/messages.ts
+var en = {
+  home: "Home",
+  hub: "All tools",
+  signIn: "Sign in",
+  signOut: "Sign out",
+  account: "Account",
+  accountOf: (email) => `Account: ${email}`,
+  openMenu: "Open menu",
+  closeMenu: "Close menu",
+  switchToLight: "Switch to light mode",
+  switchToDark: "Switch to dark mode",
+  language: "Language",
+  languageButton: (name) => `Language: ${name}`,
+  languageNote: "Applies to every DOME tool and to domelayer.com."
+};
+var UI_MESSAGES = {
+  en,
+  it: {
+    home: "Home",
+    hub: "Tutti gli strumenti",
+    signIn: "Accedi",
+    signOut: "Esci",
+    account: "Account",
+    accountOf: (email) => `Account: ${email}`,
+    openMenu: "Apri il menu",
+    closeMenu: "Chiudi il menu",
+    switchToLight: "Passa al tema chiaro",
+    switchToDark: "Passa al tema scuro",
+    language: "Lingua",
+    languageButton: (name) => `Lingua: ${name}`,
+    languageNote: "Vale per tutti gli strumenti DOME e per domelayer.com."
+  },
+  nl: {
+    home: "Start",
+    hub: "Alle tools",
+    signIn: "Inloggen",
+    signOut: "Uitloggen",
+    account: "Account",
+    accountOf: (email) => `Account: ${email}`,
+    openMenu: "Menu openen",
+    closeMenu: "Menu sluiten",
+    switchToLight: "Overschakelen naar licht thema",
+    switchToDark: "Overschakelen naar donker thema",
+    language: "Taal",
+    languageButton: (name) => `Taal: ${name}`,
+    languageNote: "Geldt voor alle DOME-tools en voor domelayer.com."
+  },
+  de: {
+    home: "Start",
+    hub: "Alle Tools",
+    signIn: "Anmelden",
+    signOut: "Abmelden",
+    account: "Konto",
+    accountOf: (email) => `Konto: ${email}`,
+    openMenu: "Men\xFC \xF6ffnen",
+    closeMenu: "Men\xFC schlie\xDFen",
+    switchToLight: "Helles Design aktivieren",
+    switchToDark: "Dunkles Design aktivieren",
+    language: "Sprache",
+    languageButton: (name) => `Sprache: ${name}`,
+    languageNote: "Gilt f\xFCr alle DOME-Tools und f\xFCr domelayer.com."
+  }
+};
+
+// src/components/ThemeToggle.tsx
+import { jsx as jsx2 } from "react/jsx-runtime";
+function ThemeToggle({ locale = DEFAULT_LOCALE } = {}) {
+  const [theme, setTheme2] = useState("dark");
+  const t = UI_MESSAGES[locale];
+  useEffect(() => {
+    setTheme2(getTheme());
+  }, []);
+  const handleToggle = () => {
+    const next = toggleTheme();
+    setTheme2(next);
+  };
+  return /* @__PURE__ */ jsx2(
+    "button",
+    {
+      onClick: handleToggle,
+      className: "theme-toggle",
+      "aria-label": theme === "dark" ? t.switchToLight : t.switchToDark,
+      children: theme === "dark" ? /* @__PURE__ */ jsx2(Sun, { size: 16, strokeWidth: 1.5 }) : /* @__PURE__ */ jsx2(Moon, { size: 16, strokeWidth: 1.5 })
+    }
+  );
+}
+
+// src/components/LanguageMenu.tsx
+import { useEffect as useEffect2, useId, useState as useState2 } from "react";
+import { Check, ChevronDown } from "lucide-react";
+
+// src/useLocale.ts
+import { useSyncExternalStore } from "react";
+function useLocale() {
+  return useSyncExternalStore(onLocaleChange, getLocale, () => DEFAULT_LOCALE);
+}
+function useMessages(catalogue) {
+  return catalogue[useLocale()];
+}
+
+// src/clsx.ts
+function clsx(...args) {
+  return args.filter(Boolean).join(" ");
+}
+
+// src/components/LanguageMenu.tsx
 import { Fragment, jsx as jsx3, jsxs as jsxs2 } from "react/jsx-runtime";
-function AuthGuard({ children, skip = false }) {
-  const [checked, setChecked] = useState2(false);
+function LanguageMenu({ variant = "bar", onChoose }) {
+  const locale = useLocale();
+  const t = UI_MESSAGES[locale];
+  const [open, setOpen] = useState2(false);
+  const listId = useId();
   useEffect2(() => {
+    if (!open) return;
+    const onKey = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+  const choose = (next) => {
+    if (next !== locale) setLocale(next);
+    setOpen(false);
+    onChoose?.();
+  };
+  const options = /* @__PURE__ */ jsx3("ul", { className: "dome-lang-list", role: "list", children: LOCALES.map((code) => {
+    const current = code === locale;
+    return /* @__PURE__ */ jsx3("li", { children: /* @__PURE__ */ jsxs2(
+      "button",
+      {
+        type: "button",
+        lang: code,
+        className: clsx("dome-lang-option", current && "is-current"),
+        "aria-current": current ? "true" : void 0,
+        onClick: () => choose(code),
+        children: [
+          /* @__PURE__ */ jsx3("span", { children: LOCALE_NAMES[code] }),
+          current ? /* @__PURE__ */ jsx3(Check, { size: 16, strokeWidth: 2, "aria-hidden": "true" }) : null
+        ]
+      }
+    ) }, code);
+  }) });
+  if (variant === "panel") {
+    return /* @__PURE__ */ jsxs2("div", { className: "dome-lang-panel", role: "group", "aria-labelledby": `${listId}-title`, children: [
+      /* @__PURE__ */ jsx3("p", { id: `${listId}-title`, className: "dome-lang-title", children: t.language }),
+      options,
+      /* @__PURE__ */ jsx3("p", { className: "dome-lang-note", children: t.languageNote })
+    ] });
+  }
+  return /* @__PURE__ */ jsxs2("div", { className: "dome-lang", children: [
+    /* @__PURE__ */ jsxs2(
+      "button",
+      {
+        type: "button",
+        className: "dome-lang-btn",
+        "aria-label": t.languageButton(LOCALE_NAMES[locale]),
+        "aria-haspopup": "true",
+        "aria-expanded": open,
+        "aria-controls": open ? listId : void 0,
+        onClick: () => setOpen((v) => !v),
+        children: [
+          locale.toUpperCase(),
+          /* @__PURE__ */ jsx3(ChevronDown, { size: 14, strokeWidth: 2, "aria-hidden": "true" })
+        ]
+      }
+    ),
+    open ? /* @__PURE__ */ jsxs2(Fragment, { children: [
+      /* @__PURE__ */ jsx3(
+        "button",
+        {
+          type: "button",
+          "aria-hidden": "true",
+          tabIndex: -1,
+          className: "dome-menu-backdrop",
+          onClick: () => setOpen(false)
+        }
+      ),
+      /* @__PURE__ */ jsxs2("div", { id: listId, className: "dome-menu dome-lang-menu", children: [
+        /* @__PURE__ */ jsx3("p", { className: "dome-lang-title", children: t.language }),
+        options,
+        /* @__PURE__ */ jsx3("p", { className: "dome-lang-note", children: t.languageNote })
+      ] })
+    ] }) : null
+  ] });
+}
+
+// src/components/AuthGuard.tsx
+import { useEffect as useEffect3, useState as useState3 } from "react";
+import { Fragment as Fragment2, jsx as jsx4, jsxs as jsxs3 } from "react/jsx-runtime";
+function AuthGuard({ children, skip = false }) {
+  const [checked, setChecked] = useState3(false);
+  useEffect3(() => {
     if (skip) {
       setChecked(true);
       return;
@@ -449,13 +703,13 @@ function AuthGuard({ children, skip = false }) {
     }
   }, [skip]);
   if (!checked) {
-    return /* @__PURE__ */ jsx3(
+    return /* @__PURE__ */ jsx4(
       "div",
       {
         className: "flex min-h-screen items-center justify-center",
         style: { background: "var(--color-bg-subtle)" },
-        children: /* @__PURE__ */ jsxs2("div", { className: "flex flex-col items-center gap-3", children: [
-          /* @__PURE__ */ jsx3(
+        children: /* @__PURE__ */ jsxs3("div", { className: "flex flex-col items-center gap-3", children: [
+          /* @__PURE__ */ jsx4(
             "div",
             {
               className: "h-6 w-6 animate-spin rounded-full border-2",
@@ -465,7 +719,7 @@ function AuthGuard({ children, skip = false }) {
               }
             }
           ),
-          /* @__PURE__ */ jsx3(
+          /* @__PURE__ */ jsx4(
             "p",
             {
               className: "text-xs font-semibold uppercase tracking-widest",
@@ -477,18 +731,18 @@ function AuthGuard({ children, skip = false }) {
       }
     );
   }
-  return /* @__PURE__ */ jsx3(Fragment, { children });
+  return /* @__PURE__ */ jsx4(Fragment2, { children });
 }
 
 // src/components/AuthContext.tsx
 import {
   createContext,
   useContext,
-  useEffect as useEffect3,
-  useState as useState3,
+  useEffect as useEffect4,
+  useState as useState4,
   useCallback
 } from "react";
-import { jsx as jsx4 } from "react/jsx-runtime";
+import { jsx as jsx5 } from "react/jsx-runtime";
 var AuthCtx = createContext({
   isAuthenticated: false,
   user: null,
@@ -503,9 +757,9 @@ function readUser() {
   return { email: typeof claims.email === "string" ? claims.email : void 0 };
 }
 function AuthProvider({ children, onSignOut }) {
-  const [isAuthenticated, setIsAuthenticated] = useState3(false);
-  const [user, setUser] = useState3(null);
-  useEffect3(() => {
+  const [isAuthenticated, setIsAuthenticated] = useState4(false);
+  const [user, setUser] = useState4(null);
+  useEffect4(() => {
     const authed = !!getToken();
     setIsAuthenticated(authed);
     setUser(authed ? readUser() : null);
@@ -526,7 +780,7 @@ function AuthProvider({ children, onSignOut }) {
     setIsAuthenticated(false);
     setUser(null);
   }, [onSignOut]);
-  return /* @__PURE__ */ jsx4(AuthCtx.Provider, { value: { isAuthenticated, user, signIn, signOut }, children });
+  return /* @__PURE__ */ jsx5(AuthCtx.Provider, { value: { isAuthenticated, user, signIn, signOut }, children });
 }
 function useAuth() {
   return useContext(AuthCtx);
@@ -534,20 +788,13 @@ function useAuth() {
 
 // src/components/ToolHeader.tsx
 import {
-  useState as useState4,
-  useSyncExternalStore
+  useState as useState5,
+  useSyncExternalStore as useSyncExternalStore2
 } from "react";
 import { LayoutGrid, Menu, X, LogOut } from "lucide-react";
-
-// src/clsx.ts
-function clsx(...args) {
-  return args.filter(Boolean).join(" ");
-}
-
-// src/components/ToolHeader.tsx
-import { Fragment as Fragment2, jsx as jsx5, jsxs as jsxs3 } from "react/jsx-runtime";
+import { Fragment as Fragment3, jsx as jsx6, jsxs as jsxs4 } from "react/jsx-runtime";
 function DefaultLink(props) {
-  return /* @__PURE__ */ jsx5("a", { ...props });
+  return /* @__PURE__ */ jsx6("a", { ...props });
 }
 function subscribeToLocation(onChange) {
   const navigation = window.navigation;
@@ -559,7 +806,7 @@ function subscribeToLocation(onChange) {
   };
 }
 function useBrowserPath() {
-  return useSyncExternalStore(
+  return useSyncExternalStore2(
     subscribeToLocation,
     () => window.location.pathname,
     () => null
@@ -597,25 +844,31 @@ function ToolHeader({
   toolName,
   homeHref = "/",
   showHomeLink = true,
-  homeLabel = "Home",
+  homeLabel,
   navLinks = [],
   renderLink,
   extra,
   width = "contained",
   showHubLink = true,
-  hubLabel = "All tools",
+  hubLabel,
   onSignIn,
-  currentPath
+  currentPath,
+  languages = false
 }) {
   const { isAuthenticated, user, signOut } = useAuth();
   const Link = renderLink ?? DefaultLink;
-  const [menuOpen, setMenuOpen] = useState4(false);
-  const [accountOpen, setAccountOpen] = useState4(false);
+  const visitorLocale = useLocale();
+  const locale = languages ? visitorLocale : DEFAULT_LOCALE;
+  const t = UI_MESSAGES[locale];
+  const homeText = homeLabel ?? t.home;
+  const hubText = hubLabel ?? t.hub;
+  const [menuOpen, setMenuOpen] = useState5(false);
+  const [accountOpen, setAccountOpen] = useState5(false);
   const email = user?.email;
   const initial = email ? email.charAt(0).toUpperCase() : "?";
   const hubHref = getHubUrl();
   const navItems = [
-    ...showHomeLink ? [{ label: homeLabel, href: homeHref, exact: true }] : [],
+    ...showHomeLink ? [{ label: homeText, href: homeHref, exact: true }] : [],
     ...navLinks.map((link) => ({ ...link, exact: false }))
   ];
   const browserPath = useBrowserPath();
@@ -632,8 +885,8 @@ function ToolHeader({
     await signOut();
     window.location.href = `${getAuthSiteUrl()}/login`;
   };
-  return /* @__PURE__ */ jsxs3("header", { className: "site-header dome-bar sticky top-0 z-40", children: [
-    /* @__PURE__ */ jsxs3(
+  return /* @__PURE__ */ jsxs4("header", { className: "site-header dome-bar sticky top-0 z-40", children: [
+    /* @__PURE__ */ jsxs4(
       "div",
       {
         className: clsx(
@@ -641,41 +894,41 @@ function ToolHeader({
           width === "fluid" ? "w-full" : "max-w-[1152px] mx-auto"
         ),
         children: [
-          /* @__PURE__ */ jsxs3("div", { className: "flex items-center min-w-0", children: [
+          /* @__PURE__ */ jsxs4("div", { className: "flex items-center min-w-0", children: [
             Link({
               href: homeHref,
-              "aria-label": "Home",
+              "aria-label": t.home,
               className: "dome-brand",
-              children: /* @__PURE__ */ jsx5(DomeLogo, { size: "md", variant: "white" })
+              children: /* @__PURE__ */ jsx6(DomeLogo, { size: "md", variant: "white" })
             }),
-            toolName ? /* @__PURE__ */ jsx5("span", { className: "dome-toolname", children: toolName }) : null
+            toolName ? /* @__PURE__ */ jsx6("span", { className: "dome-toolname", children: toolName }) : null
           ] }),
-          /* @__PURE__ */ jsxs3("nav", { className: "hidden md:flex items-center gap-4", children: [
-            isAuthenticated && showHubLink ? /* @__PURE__ */ jsxs3("a", { href: hubHref, className: "dome-navlink", children: [
-              /* @__PURE__ */ jsx5(LayoutGrid, { size: 15, strokeWidth: 1.75, "aria-hidden": "true" }),
-              hubLabel
+          /* @__PURE__ */ jsxs4("nav", { className: "hidden md:flex items-center gap-4", children: [
+            isAuthenticated && showHubLink ? /* @__PURE__ */ jsxs4("a", { href: hubHref, className: "dome-navlink", children: [
+              /* @__PURE__ */ jsx6(LayoutGrid, { size: 15, strokeWidth: 1.75, "aria-hidden": "true" }),
+              hubText
             ] }) : null,
-            navItems.map((link, i) => /* @__PURE__ */ jsx5("span", { children: Link({
+            navItems.map((link, i) => /* @__PURE__ */ jsx6("span", { children: Link({
               href: link.href,
               className: clsx("dome-navlink", i === current && "is-current"),
               "aria-current": i === current ? "page" : void 0,
               children: link.label
             }) }, `${link.href}:${link.label}`)),
-            isAuthenticated ? /* @__PURE__ */ jsxs3("div", { className: "dome-account", children: [
-              /* @__PURE__ */ jsx5(
+            isAuthenticated ? /* @__PURE__ */ jsxs4("div", { className: "dome-account", children: [
+              /* @__PURE__ */ jsx6(
                 "button",
                 {
                   type: "button",
                   className: "dome-avatar",
-                  "aria-label": email ? `Account: ${email}` : "Account",
+                  "aria-label": email ? t.accountOf(email) : t.account,
                   "aria-haspopup": "menu",
                   "aria-expanded": accountOpen,
                   onClick: () => setAccountOpen((v) => !v),
                   children: initial
                 }
               ),
-              accountOpen ? /* @__PURE__ */ jsxs3(Fragment2, { children: [
-                /* @__PURE__ */ jsx5(
+              accountOpen ? /* @__PURE__ */ jsxs4(Fragment3, { children: [
+                /* @__PURE__ */ jsx6(
                   "button",
                   {
                     type: "button",
@@ -685,9 +938,9 @@ function ToolHeader({
                     onClick: () => setAccountOpen(false)
                   }
                 ),
-                /* @__PURE__ */ jsxs3("div", { className: "dome-menu", role: "menu", children: [
-                  email ? /* @__PURE__ */ jsx5("p", { className: "dome-menu-email", title: email, children: email }) : null,
-                  /* @__PURE__ */ jsxs3(
+                /* @__PURE__ */ jsxs4("div", { className: "dome-menu", role: "menu", children: [
+                  email ? /* @__PURE__ */ jsx6("p", { className: "dome-menu-email", title: email, children: email }) : null,
+                  /* @__PURE__ */ jsxs4(
                     "button",
                     {
                       type: "button",
@@ -695,36 +948,37 @@ function ToolHeader({
                       className: "dome-menu-item",
                       onClick: handleSignOut,
                       children: [
-                        /* @__PURE__ */ jsx5(LogOut, { size: 15, strokeWidth: 1.75, "aria-hidden": "true" }),
-                        "Sign out"
+                        /* @__PURE__ */ jsx6(LogOut, { size: 15, strokeWidth: 1.75, "aria-hidden": "true" }),
+                        t.signOut
                       ]
                     }
                   )
                 ] })
               ] }) : null
-            ] }) : /* @__PURE__ */ jsx5("button", { type: "button", className: "btn btn-inverse", onClick: handleSignIn, children: "Sign in" }),
+            ] }) : /* @__PURE__ */ jsx6("button", { type: "button", className: "btn btn-inverse", onClick: handleSignIn, children: t.signIn }),
             extra,
-            /* @__PURE__ */ jsx5(ThemeToggle, {})
+            languages ? /* @__PURE__ */ jsx6(LanguageMenu, {}) : null,
+            /* @__PURE__ */ jsx6(ThemeToggle, { locale })
           ] }),
-          /* @__PURE__ */ jsxs3("div", { className: "flex items-center gap-2 md:hidden", children: [
-            /* @__PURE__ */ jsx5(ThemeToggle, {}),
-            /* @__PURE__ */ jsx5(
+          /* @__PURE__ */ jsxs4("div", { className: "flex items-center gap-2 md:hidden", children: [
+            /* @__PURE__ */ jsx6(ThemeToggle, { locale }),
+            /* @__PURE__ */ jsx6(
               "button",
               {
                 type: "button",
                 className: "dome-menu-btn",
-                "aria-label": menuOpen ? "Close menu" : "Open menu",
+                "aria-label": menuOpen ? t.closeMenu : t.openMenu,
                 "aria-expanded": menuOpen,
                 onClick: () => setMenuOpen((v) => !v),
-                children: menuOpen ? /* @__PURE__ */ jsx5(X, { size: 18, strokeWidth: 1.75 }) : /* @__PURE__ */ jsx5(Menu, { size: 18, strokeWidth: 1.75 })
+                children: menuOpen ? /* @__PURE__ */ jsx6(X, { size: 18, strokeWidth: 1.75 }) : /* @__PURE__ */ jsx6(Menu, { size: 18, strokeWidth: 1.75 })
               }
             )
           ] })
         ]
       }
     ),
-    menuOpen ? /* @__PURE__ */ jsxs3(Fragment2, { children: [
-      /* @__PURE__ */ jsx5(
+    menuOpen ? /* @__PURE__ */ jsxs4(Fragment3, { children: [
+      /* @__PURE__ */ jsx6(
         "button",
         {
           type: "button",
@@ -734,30 +988,31 @@ function ToolHeader({
           onClick: () => setMenuOpen(false)
         }
       ),
-      /* @__PURE__ */ jsxs3("div", { className: "dome-mobile-panel md:hidden", children: [
-        isAuthenticated && showHubLink ? /* @__PURE__ */ jsxs3(
+      /* @__PURE__ */ jsxs4("div", { className: "dome-mobile-panel md:hidden", children: [
+        isAuthenticated && showHubLink ? /* @__PURE__ */ jsxs4(
           "a",
           {
             href: hubHref,
             className: "dome-mobile-link",
             onClick: () => setMenuOpen(false),
             children: [
-              /* @__PURE__ */ jsx5(LayoutGrid, { size: 16, strokeWidth: 1.75, "aria-hidden": "true" }),
-              hubLabel
+              /* @__PURE__ */ jsx6(LayoutGrid, { size: 16, strokeWidth: 1.75, "aria-hidden": "true" }),
+              hubText
             ]
           }
         ) : null,
-        navItems.map((link, i) => /* @__PURE__ */ jsx5("span", { children: Link({
+        navItems.map((link, i) => /* @__PURE__ */ jsx6("span", { children: Link({
           href: link.href,
           className: clsx("dome-mobile-link", i === current && "is-current"),
           "aria-current": i === current ? "page" : void 0,
           onClick: () => setMenuOpen(false),
           children: link.label
         }) }, `${link.href}:${link.label}`)),
-        isAuthenticated ? /* @__PURE__ */ jsxs3(Fragment2, { children: [
-          email ? /* @__PURE__ */ jsx5("p", { className: "dome-menu-email", title: email, children: email }) : null,
-          /* @__PURE__ */ jsx5("button", { className: "btn btn-neutral", onClick: handleSignOut, children: "Sign out" })
-        ] }) : /* @__PURE__ */ jsx5(
+        languages ? /* @__PURE__ */ jsx6(LanguageMenu, { variant: "panel", onChoose: () => setMenuOpen(false) }) : null,
+        isAuthenticated ? /* @__PURE__ */ jsxs4(Fragment3, { children: [
+          email ? /* @__PURE__ */ jsx6("p", { className: "dome-menu-email", title: email, children: email }) : null,
+          /* @__PURE__ */ jsx6("button", { className: "btn btn-neutral", onClick: handleSignOut, children: t.signOut })
+        ] }) : /* @__PURE__ */ jsx6(
           "button",
           {
             className: "btn btn-primary",
@@ -765,7 +1020,7 @@ function ToolHeader({
               setMenuOpen(false);
               handleSignIn();
             },
-            children: "Sign in"
+            children: t.signIn
           }
         )
       ] })
@@ -774,9 +1029,9 @@ function ToolHeader({
 }
 
 // src/components/ToolFooter.tsx
-import { jsx as jsx6, jsxs as jsxs4 } from "react/jsx-runtime";
+import { jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
 function ToolFooter({ toolName, className }) {
-  return /* @__PURE__ */ jsx6(
+  return /* @__PURE__ */ jsx7(
     "footer",
     {
       className,
@@ -784,7 +1039,7 @@ function ToolFooter({ toolName, className }) {
         borderTop: "1px solid var(--color-border-default)",
         marginTop: "auto"
       },
-      children: /* @__PURE__ */ jsxs4(
+      children: /* @__PURE__ */ jsxs5(
         "div",
         {
           style: {
@@ -800,11 +1055,11 @@ function ToolFooter({ toolName, className }) {
             fontSize: 14
           },
           children: [
-            /* @__PURE__ */ jsxs4("p", { style: { color: "var(--color-text-secondary)", margin: 0 }, children: [
+            /* @__PURE__ */ jsxs5("p", { style: { color: "var(--color-text-secondary)", margin: 0 }, children: [
               toolName,
               " is a free tool by",
               " ",
-              /* @__PURE__ */ jsx6(
+              /* @__PURE__ */ jsx7(
                 "a",
                 {
                   href: "https://www.domelayer.com",
@@ -821,7 +1076,7 @@ function ToolFooter({ toolName, className }) {
               " ",
               "\u2014 Governance-Driven Operational AI."
             ] }),
-            /* @__PURE__ */ jsxs4(
+            /* @__PURE__ */ jsxs5(
               "a",
               {
                 href: "https://www.domelayer.com",
@@ -838,7 +1093,7 @@ function ToolFooter({ toolName, className }) {
                 },
                 children: [
                   "Explore Dome",
-                  /* @__PURE__ */ jsx6(
+                  /* @__PURE__ */ jsx7(
                     "svg",
                     {
                       width: "14",
@@ -846,7 +1101,7 @@ function ToolFooter({ toolName, className }) {
                       viewBox: "0 0 14 14",
                       fill: "none",
                       "aria-hidden": "true",
-                      children: /* @__PURE__ */ jsx6(
+                      children: /* @__PURE__ */ jsx7(
                         "path",
                         {
                           d: "M2.5 7h9M8 3.5 11.5 7 8 10.5",
@@ -869,7 +1124,7 @@ function ToolFooter({ toolName, className }) {
 }
 
 // src/components/Badge.tsx
-import { jsx as jsx7 } from "react/jsx-runtime";
+import { jsx as jsx8 } from "react/jsx-runtime";
 var variantStyles = {
   default: {
     color: "var(--color-text-secondary)",
@@ -902,7 +1157,7 @@ function Badge({
   children,
   className
 }) {
-  return /* @__PURE__ */ jsx7(
+  return /* @__PURE__ */ jsx8(
     "span",
     {
       className: clsx(
@@ -916,7 +1171,7 @@ function Badge({
 }
 
 // src/components/Button.tsx
-import { jsx as jsx8, jsxs as jsxs5 } from "react/jsx-runtime";
+import { jsx as jsx9, jsxs as jsxs6 } from "react/jsx-runtime";
 var baseStyle = {
   display: "inline-flex",
   alignItems: "center",
@@ -963,7 +1218,7 @@ function Button({
   style,
   ...props
 }) {
-  return /* @__PURE__ */ jsxs5(
+  return /* @__PURE__ */ jsxs6(
     "button",
     {
       className: clsx("dome-btn", className),
@@ -976,7 +1231,7 @@ function Button({
       },
       ...props,
       children: [
-        loading && /* @__PURE__ */ jsx8(
+        loading && /* @__PURE__ */ jsx9(
           "span",
           {
             className: "animate-spin",
@@ -997,9 +1252,9 @@ function Button({
 }
 
 // src/components/Card.tsx
-import { jsx as jsx9 } from "react/jsx-runtime";
+import { jsx as jsx10 } from "react/jsx-runtime";
 function Card({ children, className }) {
-  return /* @__PURE__ */ jsx9(
+  return /* @__PURE__ */ jsx10(
     "div",
     {
       className: clsx("rounded-lg border p-6", className),
@@ -1013,10 +1268,10 @@ function Card({ children, className }) {
 }
 
 // src/components/StagingBanner.tsx
-import { jsx as jsx10 } from "react/jsx-runtime";
+import { jsx as jsx11 } from "react/jsx-runtime";
 function StagingBanner({ environment, className }) {
   if (environment !== "staging") return null;
-  return /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsx11(
     "div",
     {
       role: "status",
@@ -1054,10 +1309,14 @@ export {
   DomeLogo,
   DomeLogoLarge,
   DomeSymbol,
+  LanguageMenu,
   StagingBanner,
   ThemeToggle,
   ToolFooter,
   ToolHeader,
+  UI_MESSAGES,
   clsx,
-  useAuth
+  useAuth,
+  useLocale,
+  useMessages
 };
