@@ -60,7 +60,7 @@ declare function useLocale(): Locale;
 declare function useMessages<T>(catalogue: Catalogue<T>): T;
 
 /**
- * The shared parts' own words: the tool bar, its menus and the theme switch. Worded as on
+ * The shared parts' own words: the tool bar, its menus, the theme switch and the footer. Worded as on
  * domelayer.com (its `nav` catalogue), so the site, the hub and the tools say the same thing.
  * English is the source type.
  */
@@ -78,6 +78,9 @@ declare const en: {
     language: string;
     languageButton: (name: string) => string;
     languageNote: string;
+    footerBy: (toolName: string) => string;
+    footerTagline: string;
+    footerExplore: string;
 };
 type UiMessages = typeof en;
 declare const UI_MESSAGES: Catalogue<UiMessages>;
@@ -161,8 +164,13 @@ declare function ToolHeader({ toolName, homeHref, showHomeLink, homeLabel, navLi
 interface ToolFooterProps {
     toolName: string;
     className?: string;
+    /**
+     * The footer in the visitor's language (EN, IT, NL, DE), as ToolHeader's `languages` does for the
+     * bar. Default false, so a tool stays English throughout until its own strings are translated.
+     */
+    languages?: boolean;
 }
-declare function ToolFooter({ toolName, className }: ToolFooterProps): react.JSX.Element;
+declare function ToolFooter({ toolName, className, languages }: ToolFooterProps): react.JSX.Element;
 
 type BadgeVariant = "default" | "success" | "warning" | "error" | "accent";
 interface BadgeProps {

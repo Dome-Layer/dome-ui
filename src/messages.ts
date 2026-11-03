@@ -1,7 +1,7 @@
 import type { Catalogue } from "./locale";
 
 /**
- * The shared parts' own words: the tool bar, its menus and the theme switch. Worded as on
+ * The shared parts' own words: the tool bar, its menus, the theme switch and the footer. Worded as on
  * domelayer.com (its `nav` catalogue), so the site, the hub and the tools say the same thing.
  * English is the source type.
  */
@@ -18,7 +18,9 @@ const en = {
   switchToDark: "Switch to dark mode",
   language: "Language",
   languageButton: (name: string) => `Language: ${name}`,
-  languageNote: "Applies to every DOME tool and to domelayer.com.",
+  languageNote: "Applies to every DOME tool and to domelayer.com.",  footerBy: (toolName: string) => `${toolName} is a free tool by`,
+  footerTagline: ": governance-driven operational AI.",
+  footerExplore: "Explore Dome",
 };
 
 export type UiMessages = typeof en;
@@ -39,6 +41,9 @@ export const UI_MESSAGES: Catalogue<UiMessages> = {
     language: "Lingua",
     languageButton: (name: string) => `Lingua: ${name}`,
     languageNote: "Vale per tutti gli strumenti DOME e per domelayer.com.",
+    footerBy: (toolName: string) => `${toolName} è uno strumento gratuito di`,
+    footerTagline: ": AI operativa guidata dalla governance.",
+    footerExplore: "Scopri Dome",
   },
   nl: {
     home: "Start",
@@ -54,6 +59,9 @@ export const UI_MESSAGES: Catalogue<UiMessages> = {
     language: "Taal",
     languageButton: (name: string) => `Taal: ${name}`,
     languageNote: "Geldt voor alle DOME-tools en voor domelayer.com.",
+    footerBy: (toolName: string) => `${toolName} is een gratis tool van`,
+    footerTagline: ": operationele AI, gestuurd door governance.",
+    footerExplore: "Ontdek Dome",
   },
   de: {
     home: "Start",
@@ -69,5 +77,8 @@ export const UI_MESSAGES: Catalogue<UiMessages> = {
     language: "Sprache",
     languageButton: (name: string) => `Sprache: ${name}`,
     languageNote: "Gilt für alle DOME-Tools und für domelayer.com.",
+    footerBy: (toolName: string) => `${toolName} ist ein kostenloses Tool von`,
+    footerTagline: ": operative KI, gesteuert durch Governance.",
+    footerExplore: "Dome entdecken",
   },
 };

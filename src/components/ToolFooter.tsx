@@ -1,9 +1,20 @@
+import { DEFAULT_LOCALE } from "../locale";
+import { useLocale } from "../useLocale";
+import { UI_MESSAGES } from "../messages";
+
 interface ToolFooterProps {
   toolName: string;
   className?: string;
+  /**
+   * The footer in the visitor's language (EN, IT, NL, DE), as ToolHeader's `languages` does for the
+   * bar. Default false, so a tool stays English throughout until its own strings are translated.
+   */
+  languages?: boolean;
 }
 
-export function ToolFooter({ toolName, className }: ToolFooterProps) {
+export function ToolFooter({ toolName, className, languages = false }: ToolFooterProps) {
+  const visitorLocale = useLocale();
+  const t = UI_MESSAGES[languages ? visitorLocale : DEFAULT_LOCALE];
   return (
     <footer
       className={className}
@@ -27,7 +38,7 @@ export function ToolFooter({ toolName, className }: ToolFooterProps) {
         }}
       >
         <p style={{ color: "var(--color-text-secondary)", margin: 0 }}>
-          {toolName} is a free tool by{" "}
+          {t.footerBy(toolName)}{" "}
           <a
             href="https://www.domelayer.com"
             target="_blank"
@@ -40,7 +51,7 @@ export function ToolFooter({ toolName, className }: ToolFooterProps) {
           >
             Dome
           </a>
-          {" "}&mdash; Governance-Driven Operational AI.
+          {t.footerTagline}
         </p>
         <a
           href="https://www.domelayer.com"
@@ -56,7 +67,7 @@ export function ToolFooter({ toolName, className }: ToolFooterProps) {
             whiteSpace: "nowrap",
           }}
         >
-          Explore Dome
+          {t.footerExplore}
           <svg
             width="14"
             height="14"
